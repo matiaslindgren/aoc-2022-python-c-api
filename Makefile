@@ -3,12 +3,17 @@ SHELL := /bin/sh
 CPYTHON_ARCHIVE_URL := https://www.python.org/ftp/python/3.11.0/Python-3.11.0.tgz
 CPYTHON_ARCHIVE_MD5 := c5f77f1ea256dc5bdb0897eeb4d35bb0
 
+ifeq ($(shell uname),Darwin)
+	MD5 := md5 -r
+else
+	MD5 := md5sum
+endif
 
 Python.tgz:
 	curl -L -o Python.tgz "$(CPYTHON_ARCHIVE_URL)"
 
 py_src: Python.tgz
-	[[ "$$(md5 Python.tgz)" == "MD5 (Python.tgz) = $(CPYTHON_ARCHIVE_MD5)" ]] || exit 1
+	[ "$$($(MD5) Python.tgz)" = "$(CPYTHON_ARCHIVE_MD5)  Python.tgz" ] || exit 1
 	mkdir -p $@
 	tar --directory py_src -zx --strip-components 1 -f Python.tgz
 
