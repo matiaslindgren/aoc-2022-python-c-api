@@ -25,16 +25,16 @@ else
 endif
 
 Python.tgz:
-	curl -L -o Python.tgz "$(CPYTHON_ARCHIVE_URL)"
+	curl -L -o $@ "$(CPYTHON_ARCHIVE_URL)"
 
 py_src: Python.tgz
-	[ "$$($(MD5) Python.tgz | tr -d ' ')" = "$(CPYTHON_ARCHIVE_MD5)Python.tgz" ] || exit 1
+	[ "$$($(MD5) $< | tr -d ' ')" = "$(CPYTHON_ARCHIVE_MD5)$<" ] || exit 1
 	mkdir -p $@
-	tar --directory py_src -zx --strip-components 1 -f Python.tgz
+	tar --directory $@ -zx --strip-components 1 -f $<
 
 python: py_src
-	cd py_src && ./configure --prefix $(abspath ./python) --enable-optimizations
-	cd py_src && make -j && make -j test && make install
+	cd $< && ./configure --prefix $(abspath ./$@) --enable-optimizations
+	cd $< && make -j && make -j test && make install
 
 CLANG := clang
 CFLAGS := \
