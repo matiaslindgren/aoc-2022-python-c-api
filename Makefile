@@ -28,7 +28,7 @@ Python.tgz:
 	curl -L -o Python.tgz "$(CPYTHON_ARCHIVE_URL)"
 
 py_src: Python.tgz
-	[ "$$($(MD5) Python.tgz)" = "$(CPYTHON_ARCHIVE_MD5)  Python.tgz" ] || exit 1
+	[ "$$($(MD5) Python.tgz | tr -d ' ')" = "$(CPYTHON_ARCHIVE_MD5)Python.tgz" ] || exit 1
 	mkdir -p $@
 	tar --directory py_src -zx --strip-components 1 -f Python.tgz
 
@@ -36,7 +36,7 @@ python: py_src
 	cd py_src && ./configure --prefix $(abspath ./python) --enable-optimizations
 	cd py_src && make -j && make -j test && make install
 
-CLANG := clang-11
+CLANG := clang
 CFLAGS := \
 	-std=c17 \
 	-Wall \
