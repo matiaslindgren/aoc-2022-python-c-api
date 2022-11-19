@@ -1,17 +1,12 @@
 #define PY_SSIZE_T_CLEAN
-#include <Python.h>
+#include "Python.h"
 
-int main(int argc, char *argv[]) {
-  wchar_t *program = Py_DecodeLocale(argv[0], NULL);
-  if (program == NULL) {
-    fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
-    exit(1);
-  }
-
+int main(int argc, char **argv) {
+  PyStatus status;
   PyConfig config;
   PyConfig_InitPythonConfig(&config);
-
-  PyStatus status = PyConfig_SetString(&config, &config.program_name, program);
+  config.isolated = 1;
+  status = PyConfig_SetBytesArgv(&config, argc, argv);
   if (PyStatus_Exception(status)) {
     goto exception;
   }
@@ -19,19 +14,13 @@ int main(int argc, char *argv[]) {
   if (PyStatus_Exception(status)) {
     goto exception;
   }
-
-  int res = PyRun_SimpleString(
-      "from time import time,ctime\n"
-      "print('Today is', ctime(time()))\n");
-  if (res < 0) {
-    exit(1);
-  }
-
   PyConfig_Clear(&config);
-  return 0;
+  return Py_RunMain();
 
 exception:
   PyConfig_Clear(&config);
+  if (PyStatus_IsExit(status)) {
+    return status.exitcode;
+  }
   Py_ExitStatusException(status);
-  return 1;
 }
