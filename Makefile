@@ -39,9 +39,9 @@ python: py_src
 CLANG := clang
 CFLAGS := \
 	-std=c17 \
+	-O3 \
 	-Wall \
 	-Werror \
-	-fsanitize=address \
 	-fsanitize=undefined
 
 $(OUT_FILES): $(OUT)/%: src/%.c | $(OUT)
