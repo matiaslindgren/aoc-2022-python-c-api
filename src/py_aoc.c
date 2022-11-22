@@ -1,23 +1,26 @@
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
+#include "d01.h"
 
 static PyObject *solve_aoc_y2022(PyObject *module, PyObject *args) {
   unsigned char day;
-  const char *input;
-  if (!PyArg_ParseTuple(args, "bs", &day, &input)) {
+  PyObject *input;
+  if (!PyArg_ParseTuple(args, "bU", &day, &input)) {
     PyErr_SetString(PyExc_RuntimeError,
-                    "Failed parsing positional args as 'unsigned char' and 'const char*'");
+                    "Failed parsing positional args as 'unsigned char' and Python Unicode object");
     return NULL;
   }
-  if (day < 1 || 25 < day) {
-    PyErr_SetString(PyExc_RuntimeError, "Argument 'day' must be in range [1, 25]");
-    return NULL;
+  PySys_FormatStdout("day %u input %U\n", day, input);
+  switch (day) {
+    case 1: {
+      return aoc_y2022_d01(input);
+    }
+    default: {
+      // TODO add new exception to module
+      PyErr_Format(PyExc_RuntimeError, "No solutions for day %u", day);
+      return NULL;
+    }
   }
-  printf("day %u\n", day);
-  printf("input %s\n", input);
-  PyObject *solution;
-  solution = Py_BuildValue("s", "TODO result");
-  return solution;
 }
 
 // Methods available in module 'solve_aoc'
@@ -46,17 +49,10 @@ PyMODINIT_FUNC PyInit_solve_aoc(void) { return PyModule_Create(&solve_aoc_module
 
 // https://docs.python.org/3/c-api/init_config.html#initialization-with-pyconfig
 PyStatus _init_python(int argc, char *const *argv) {
-  PyStatus status;
-
   PyConfig config;
   PyConfig_InitPythonConfig(&config);
-  const char *program_name = argv[0];
-  status = PyConfig_SetBytesString(&config, &config.program_name, program_name);
-  if (PyStatus_Exception(status)) {
-    goto done;
-  }
 
-  status = PyConfig_SetBytesArgv(&config, argc, argv);
+  PyStatus status = PyConfig_SetBytesArgv(&config, argc, argv);
   if (PyStatus_Exception(status)) {
     goto done;
   }
@@ -83,12 +79,6 @@ int main(int argc, char *const *argv) {
   PyStatus status = _init_python(argc, argv);
   if (PyStatus_Exception(status)) {
     Py_ExitStatusException(status);
-  }
-  // TODO module is not in globals
-  if (!PyImport_ImportModule(solve_aoc_module.m_name)) {
-    PyErr_Print();
-    fprintf(stderr, "Failed to import module '%s'\n", solve_aoc_module.m_name);
-    exit(1);
   }
   return Py_RunMain();
 }

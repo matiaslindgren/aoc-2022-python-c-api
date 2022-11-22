@@ -1,12 +1,8 @@
 SHELL := /bin/sh
-
-OUT ?= out
-SRC_FILES := $(wildcard src/??.c)
-BIN_FILES := $(notdir $(basename $(SRC_FILES)))
-OUT_FILES := $(addprefix $(OUT)/,$(BIN_FILES))
+OUT   := out
 
 .PHONY: all
-all: $(OUT_FILES)
+all: $(OUT)/py_aoc
 
 .PHONY: clean
 clean:
@@ -44,10 +40,11 @@ CFLAGS := \
 	-Werror \
 	-fsanitize=undefined
 
-$(OUT_FILES): $(OUT)/%: src/%.c | $(OUT)
+$(OUT)/py_aoc: $(OUT)/%: src/%.c $(wildcard include/d??.h) | $(OUT)
 	$(CLANG) \
 		$(CFLAGS) \
 		$(shell ./python/bin/python3-config --cflags --embed) \
-		$^ \
+		-I./include \
+		$< \
 		-o $@ \
 		$(shell ./python/bin/python3-config --ldflags --embed)
