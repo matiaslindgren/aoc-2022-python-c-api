@@ -1,25 +1,35 @@
 #include "common.h"
 #include "d01.h"
+#include "d04.h"
+
+static PyObject *_solve_aoc_y2022(unsigned char day, PyObject *unicode_input) {
+  switch (day) {
+    case 1: {
+      return aoc_y2022_d01(unicode_input);
+    }
+    case 4: {
+      return aoc_y2022_d04(unicode_input);
+    }
+  }
+  return NULL;
+}
 
 static PyObject *solve_aoc_y2022(PyObject *module, PyObject *args) {
   unsigned char day;
-  PyObject *input;
-  if (!PyArg_ParseTuple(args, "bU", &day, &input)) {
+  PyObject *unicode_input;
+  if (!PyArg_ParseTuple(args, "bU", &day, &unicode_input)) {
     PyErr_SetString(PyExc_RuntimeError,
                     "Failed parsing positional args as 'unsigned char' and Python Unicode object");
     goto error;
   }
-  PySys_FormatStdout("day %u input %U\n", day, input);
-  switch (day) {
-    case 1: {
-      return aoc_y2022_d01(input);
-    }
-    default: {
-      // TODO add new exception to module
-      PyErr_Format(PyExc_RuntimeError, "No solutions for day %u", day);
-      goto error;
-    }
+
+  PyObject *solution = _solve_aoc_y2022(day, unicode_input);
+  if (solution == NULL) {
+    // TODO add new exception to module
+    PyErr_Format(PyExc_RuntimeError, "Failed to find solution for day %u", day);
+    goto error;
   }
+  return solution;
 
 error:
   return NULL;

@@ -1,15 +1,15 @@
 {
   "*.h": {
     "template": [
-      "#ifndef _AOC_Y2022_{basename|capitalize}_H_INCLUDED",
-      "#define _AOC_Y2022_{basename|capitalize}_H_INCLUDED",
+      "#ifndef _AOC_Y2022_{basename|uppercase}_H_INCLUDED",
+      "#define _AOC_Y2022_{basename|uppercase}_H_INCLUDED",
       "#define PY_SSIZE_T_CLEAN",
       "#include \"Python.h\"",
       "",
-      "PyObject *aoc_y2022_{basename}(PyObject *input) {",
-      "  return Py_BuildValue(\"U\", \"TODO answer\");",
+      "PyObject *aoc_y2022_{basename}(PyObject *unicode_input) {",
+      "  return Py_BuildValue(\"U\", \"TODO answer {basename}\");",
       "}",
-      "#endif  // _AOC_Y2022_{basename|capitalize}_H_INCLUDED"
+      "#endif  // _AOC_Y2022_{basename|uppercase}_H_INCLUDED"
     ]
   }
 }
