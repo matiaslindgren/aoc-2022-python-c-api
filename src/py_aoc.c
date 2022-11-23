@@ -8,7 +8,7 @@ static PyObject *solve_aoc_y2022(PyObject *module, PyObject *args) {
   if (!PyArg_ParseTuple(args, "bU", &day, &input)) {
     PyErr_SetString(PyExc_RuntimeError,
                     "Failed parsing positional args as 'unsigned char' and Python Unicode object");
-    return NULL;
+    goto error;
   }
   PySys_FormatStdout("day %u input %U\n", day, input);
   switch (day) {
@@ -18,9 +18,12 @@ static PyObject *solve_aoc_y2022(PyObject *module, PyObject *args) {
     default: {
       // TODO add new exception to module
       PyErr_Format(PyExc_RuntimeError, "No solutions for day %u", day);
-      return NULL;
+      goto error;
     }
   }
+
+error:
+  return NULL;
 }
 
 // Methods available in module 'solve_aoc'
