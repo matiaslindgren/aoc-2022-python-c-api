@@ -25,4 +25,14 @@ done:
   return status;
 }
 
+void _aoc_common_debug_dump_lines(PyObject *lines) {
+  Py_INCREF(lines);
+  Py_ssize_t num_lines = PyList_Size(lines);
+  for (Py_ssize_t i = 0; i < num_lines; ++i) {
+    PyObject *line = PyList_GetItem(lines, i);
+    PySys_FormatStdout("%zd: %U\n", i, line);
+  }
+  Py_DECREF(lines);
+}
+
 #endif  // _AOC_COMMON_H_INCLUDED
