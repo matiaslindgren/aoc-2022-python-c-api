@@ -1,5 +1,4 @@
-#define PY_SSIZE_T_CLEAN
-#include "Python.h"
+#include "common.h"
 #include "d01.h"
 
 static PyObject *solve_aoc_y2022(PyObject *module, PyObject *args) {
@@ -50,28 +49,6 @@ static struct PyModuleDef solve_aoc_module = {
 
 PyMODINIT_FUNC PyInit_solve_aoc(void) { return PyModule_Create(&solve_aoc_module); }
 
-// https://docs.python.org/3/c-api/init_config.html#initialization-with-pyconfig
-PyStatus _init_python(int argc, char *const *argv) {
-  PyConfig config;
-  PyConfig_InitPythonConfig(&config);
-
-  PyStatus status = PyConfig_SetBytesArgv(&config, argc, argv);
-  if (PyStatus_Exception(status)) {
-    goto done;
-  }
-
-  status = PyConfig_Read(&config);
-  if (PyStatus_Exception(status)) {
-    goto done;
-  }
-
-  status = Py_InitializeFromConfig(&config);
-
-done:
-  PyConfig_Clear(&config);
-  return status;
-}
-
 int main(int argc, char *const *argv) {
   // Make 'solve_aoc' available as a builtin module
   if (PyImport_AppendInittab(solve_aoc_module.m_name, PyInit_solve_aoc) == -1) {
@@ -79,7 +56,7 @@ int main(int argc, char *const *argv) {
     fprintf(stderr, "Failed to extend builtin modules table with 'solve_aoc'\n");
     exit(1);
   }
-  PyStatus status = _init_python(argc, argv);
+  PyStatus status = _aoc_common_init_python(argc, argv);
   if (PyStatus_Exception(status)) {
     Py_ExitStatusException(status);
   }
