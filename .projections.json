@@ -3,8 +3,7 @@
     "template": [
       "#ifndef _AOC_Y2022_{basename|uppercase}_H_INCLUDED",
       "#define _AOC_Y2022_{basename|uppercase}_H_INCLUDED",
-      "#define PY_SSIZE_T_CLEAN",
-      "#include \"Python.h\"",
+      "#include \"common.h\"",
       "",
       "PyObject *aoc_y2022_{basename}(PyObject *unicode_input) {",
       "  return Py_BuildValue(\"U\", \"TODO answer {basename}\");",
