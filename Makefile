@@ -1,15 +1,29 @@
-SHELL := /bin/sh
-OUT   := out
+SHELL  := /bin/sh
+OUT    := out
+CLANG  := clang
+CFLAGS := \
+	-std=c17 \
+	-O3 \
+	-Wall \
+	-Werror \
+	-fsanitize=undefined
 
-.PHONY: all
-all: $(OUT)/py_aoc
+$(OUT)/py_aoc: $(OUT)/%: src/%.c $(wildcard include/d??.h) | $(OUT)
+	$(CLANG) \
+		$(CFLAGS) \
+		$(shell ./python/bin/python3-config --cflags --embed) \
+		-I./include \
+		$< \
+		-o $@ \
+		$(shell ./python/bin/python3-config --ldflags --embed)
+
+$(OUT):
+	mkdir -p $@
 
 .PHONY: clean
 clean:
 	rm -rv $(OUT)
 
-$(OUT):
-	mkdir -p $@
 
 CPYTHON_ARCHIVE_URL := https://www.python.org/ftp/python/3.11.0/Python-3.11.0.tgz
 CPYTHON_ARCHIVE_MD5 := c5f77f1ea256dc5bdb0897eeb4d35bb0
@@ -31,20 +45,3 @@ py_src: Python.tgz
 python: py_src
 	cd $< && ./configure --prefix $(abspath ./$@) --enable-optimizations
 	cd $< && make -j && make -j test && make install
-
-CLANG := clang
-CFLAGS := \
-	-std=c17 \
-	-O3 \
-	-Wall \
-	-Werror \
-	-fsanitize=undefined
-
-$(OUT)/py_aoc: $(OUT)/%: src/%.c $(wildcard include/d??.h) | $(OUT)
-	$(CLANG) \
-		$(CFLAGS) \
-		$(shell ./python/bin/python3-config --cflags --embed) \
-		-I./include \
-		$< \
-		-o $@ \
-		$(shell ./python/bin/python3-config --ldflags --embed)
