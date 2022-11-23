@@ -8,7 +8,7 @@ CFLAGS := \
 	-Werror \
 	-fsanitize=undefined
 
-$(OUT)/py_aoc: $(OUT)/%: src/%.c $(wildcard include/d??.h) | $(OUT)
+$(OUT)/py_aoc: $(OUT)/%: src/%.c $(wildcard include/d??.h) $(OUT) python
 	$(CLANG) \
 		$(CFLAGS) \
 		$(shell ./python/bin/python3-config --cflags --embed) \
