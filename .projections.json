@@ -5,8 +5,8 @@
       "#define _AOC_Y2022_{basename|uppercase}_H_INCLUDED",
       "#include \"common.h\"",
       "",
-      "PyObject *aoc_y2022_{basename}(PyObject *unicode_input) {",
-      "  return Py_BuildValue(\"U\", \"TODO answer {basename}\");",
+      "PyObject *AoC_y2022_{basename}(PyObject *unicode_input) {",
+      "  return Py_BuildValue(\"U\", \"TODO answer for {basename}\");",
       "}",
       "#endif  // _AOC_Y2022_{basename|uppercase}_H_INCLUDED"
     ]

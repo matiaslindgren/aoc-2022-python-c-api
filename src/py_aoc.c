@@ -2,19 +2,19 @@
 #include "d01.h"
 #include "d04.h"
 
-static PyObject *_solve_aoc_y2022(unsigned char day, PyObject *unicode_input) {
+static PyObject *_AoC_solve_y2022(unsigned char day, PyObject *unicode_input) {
   switch (day) {
     case 1: {
-      return aoc_y2022_d01(unicode_input);
+      return AoC_y2022_d01(unicode_input);
     }
     case 4: {
-      return aoc_y2022_d04(unicode_input);
+      return AoC_y2022_d04(unicode_input);
     }
   }
   return NULL;
 }
 
-static PyObject *solve_aoc_y2022(PyObject *module, PyObject *args) {
+static PyObject *AoC_solve_y2022(PyObject *module, PyObject *args) {
   unsigned char day;
   PyObject *unicode_input;
   if (!PyArg_ParseTuple(args, "bU", &day, &unicode_input)) {
@@ -23,7 +23,7 @@ static PyObject *solve_aoc_y2022(PyObject *module, PyObject *args) {
     goto error;
   }
 
-  PyObject *solution = _solve_aoc_y2022(day, unicode_input);
+  PyObject *solution = _AoC_solve_y2022(day, unicode_input);
   if (solution == NULL) {
     // TODO add new exception to module
     PyErr_Format(PyExc_RuntimeError, "Failed to find solution for day %u", day);
@@ -35,11 +35,11 @@ error:
   return NULL;
 }
 
-// Methods available in module 'solve_aoc'
-static PyMethodDef solve_aoc_methods[] = {
+// Methods available in module 'aoc_solve'
+static PyMethodDef AoC_solve_methods[] = {
     {
         "y2022",
-        (PyCFunction)solve_aoc_y2022,
+        (PyCFunction)AoC_solve_y2022,
         METH_VARARGS,
         "Advent of Code 2022 solver",
     },
@@ -52,21 +52,21 @@ static PyMethodDef solve_aoc_methods[] = {
     },
 };
 
-// Definition of module 'solve_aoc'
-static struct PyModuleDef solve_aoc_module = {
-    PyModuleDef_HEAD_INIT, "solve_aoc", "Advent of Code solvers", -1, solve_aoc_methods,
+// Definition of module 'aoc_solve'
+static struct PyModuleDef AoC_solve_module = {
+    PyModuleDef_HEAD_INIT, "aoc_solve", "Advent of Code solvers", -1, AoC_solve_methods,
 };
 
-PyMODINIT_FUNC PyInit_solve_aoc(void) { return PyModule_Create(&solve_aoc_module); }
+PyMODINIT_FUNC PyInit_AoC_solve(void) { return PyModule_Create(&AoC_solve_module); }
 
 int main(int argc, char *const *argv) {
-  // Make 'solve_aoc' available as a builtin module
-  if (PyImport_AppendInittab(solve_aoc_module.m_name, PyInit_solve_aoc) == -1) {
+  // Make 'aoc_solve' available as a builtin module
+  if (PyImport_AppendInittab(AoC_solve_module.m_name, PyInit_AoC_solve) == -1) {
     PyErr_Print();
-    fprintf(stderr, "Failed to extend builtin modules table with 'solve_aoc'\n");
+    fprintf(stderr, "Failed to extend builtin modules table with 'aoc_solve'\n");
     exit(1);
   }
-  PyStatus status = _aoc_common_init_python(argc, argv);
+  PyStatus status = _AoC_init_python(argc, argv);
   if (PyStatus_Exception(status)) {
     Py_ExitStatusException(status);
   }

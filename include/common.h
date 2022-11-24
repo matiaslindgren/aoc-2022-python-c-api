@@ -4,7 +4,7 @@
 #include "Python.h"
 
 // https://docs.python.org/3/c-api/init_config.html#initialization-with-pyconfig
-PyStatus _aoc_common_init_python(int argc, char *const *argv) {
+PyStatus _AoC_init_python(int argc, char *const *argv) {
   PyConfig config;
   PyConfig_InitPythonConfig(&config);
 
@@ -25,14 +25,23 @@ done:
   return status;
 }
 
-void _aoc_common_debug_dump_lines(PyObject *lines) {
-  Py_INCREF(lines);
+void _AoC_debug_dump_lines(PyObject *lines) {
   Py_ssize_t num_lines = PyList_Size(lines);
   for (Py_ssize_t i = 0; i < num_lines; ++i) {
     PyObject *line = PyList_GetItem(lines, i);
     PySys_FormatStdout("%zd: %U\n", i, line);
   }
-  Py_DECREF(lines);
+}
+
+int _AoC_list_contains_null(PyObject *list) {
+  Py_ssize_t n = PyList_Size(list);
+  for (Py_ssize_t i = 0; i < n; ++i) {
+    PyObject *item = PyList_GetItem(list, i);
+    if (item == NULL) {
+      return 1;
+    }
+  }
+  return 0;
 }
 
 #endif  // _AOC_COMMON_H_INCLUDED
