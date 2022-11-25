@@ -9,6 +9,10 @@ PyStatus _AoC_init_python(int argc, char *const *argv) {
   PyConfig_InitPythonConfig(&config);
 
   config.optimization_level = 2;
+  config.bytes_warning = 2;
+
+  config.malloc_stats = 1;
+  config.show_ref_count = 1;
 
   PyStatus status = PyConfig_SetBytesArgv(&config, argc, argv);
   if (PyStatus_Exception(status)) {
