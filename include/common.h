@@ -8,6 +8,8 @@ PyStatus _AoC_init_python(int argc, char *const *argv) {
   PyConfig config;
   PyConfig_InitPythonConfig(&config);
 
+  config.optimization_level = 2;
+
   PyStatus status = PyConfig_SetBytesArgv(&config, argc, argv);
   if (PyStatus_Exception(status)) {
     goto done;
@@ -33,15 +35,25 @@ void _AoC_debug_dump_lines(PyObject *lines) {
   }
 }
 
-int _AoC_list_contains_null(PyObject *list) {
+int _AoC_list_is_ok(PyObject *list) {
+  if (!PyList_CheckExact(list)) {
+    return 0;
+  }
   Py_ssize_t n = PyList_Size(list);
   for (Py_ssize_t i = 0; i < n; ++i) {
     PyObject *item = PyList_GetItem(list, i);
     if (item == NULL) {
-      return 1;
+      return 0;
     }
   }
-  return 0;
+  return 1;
+}
+
+PyObject *AoC_unicode_split(PyObject *s, const char *sep, Py_ssize_t maxsplit) {
+  PyObject *unicode_sep = PyUnicode_FromString(sep);
+  PyObject *parts = PyUnicode_Split(s, unicode_sep, maxsplit);
+  Py_DECREF(unicode_sep);
+  return parts;
 }
 
 #endif  // _AOC_COMMON_H_INCLUDED
