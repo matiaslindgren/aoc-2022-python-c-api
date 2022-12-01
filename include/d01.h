@@ -13,6 +13,7 @@ PyObject *AoC_y2022_d01(PyObject *unicode_input) {
     PyObject *sum = PyLong_FromLong(0L);
     if (!sum) {
       Py_DECREF(calories);
+      Py_DECREF(calorie_groups);
       goto error;
     }
     for (Py_ssize_t i = 0; i < num_calories; ++i) {
@@ -26,8 +27,11 @@ PyObject *AoC_y2022_d01(PyObject *unicode_input) {
     }
     Py_DECREF(calories);
     if (PyList_SetItem(calorie_sums, group_i, sum) == -1) {
+      Py_DECREF(sum);
+      Py_DECREF(calorie_groups);
       goto error;
     }
+    Py_DECREF(sum);
   }
   Py_DECREF(calorie_groups);
 
