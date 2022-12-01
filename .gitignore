@@ -2,3 +2,4 @@ Python.tgz
 python
 py_src
 out
+test*.log
