@@ -35,7 +35,7 @@ void _AoC_debug_dump_lines(PyObject *lines) {
   Py_ssize_t num_lines = PyList_Size(lines);
   for (Py_ssize_t i = 0; i < num_lines; ++i) {
     PyObject *line = PyList_GetItem(lines, i);
-    PySys_FormatStdout("%zd: %U\n", i, line);
+    PySys_FormatStdout("%zd: %S\n", i, line);
   }
 }
 
