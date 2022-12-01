@@ -7,6 +7,7 @@ static PyObject *_AoC_solve_y2022(int day, PyObject *unicode_input) {
       return AoC_y2022_d01(unicode_input);
     }
   }
+  PyErr_Format(PyExc_ValueError, "no solution implemented for day %d", day);
   return NULL;
 }
 
