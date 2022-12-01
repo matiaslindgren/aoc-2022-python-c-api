@@ -107,4 +107,6 @@ PyObject *AoC_unicode_split(PyObject *s, const char *sep, Py_ssize_t maxsplit) {
   return parts;
 }
 
+PyObject *AoC_unicode_split_sections(PyObject *s) { return AoC_unicode_split(s, "\n\n", -1); }
+
 #endif  // _AOC_COMMON_H_INCLUDED
