@@ -5,20 +5,21 @@ ok=1
 
 for day in $(seq 1 25); do
 	f_correct="$(printf './txt/correct/%.2d.txt' $day)"
-	if [ -f "$f_correct" ]; then
-		expect="$(cat "$f_correct")"
-		output="$(./solve $day 2> /dev/null)"
-		printf 'day %.2d: ' $day
-		if [ "$output" != "$expect" ]; then
-			printf "fail\n"
-			ok=0
-		else
-			printf "ok\n"
-		fi
-		printf 'expect: %s\n' "$expect"
-		printf 'output: %s\n' "$output"
-		printf '\n'
+	if [ ! -f "$f_correct" ]; then
+		continue;
 	fi
+	expect="$(cat "$f_correct")"
+	output="$(./solve $day 2> /dev/null)"
+	printf 'day %.2d: ' $day
+	if [ "$output" != "$expect" ]; then
+		printf "fail\n"
+		ok=0
+	else
+		printf "ok\n"
+	fi
+	printf 'expect: %s\n' "$expect"
+	printf 'output: %s\n' "$output"
+	printf '\n'
 done
 
 if [ ! $ok ]; then
