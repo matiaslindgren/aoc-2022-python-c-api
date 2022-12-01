@@ -9,8 +9,7 @@ static PyObject *_AoC_solve_y2022(int day, PyObject *unicode_input) {
       return AoC_y2022_d01(unicode_input);
     }
   }
-  PyErr_Format(PyExc_ValueError, "no solution implemented for day %d", day);
-  return NULL;
+  return PyErr_Format(PyExc_ValueError, "no solution implemented for day %d", day);
 }
 
 static PyObject *AoC_solve_y2022(PyObject *module, PyObject *args) {
@@ -31,7 +30,7 @@ static PyObject *AoC_solve_y2022(PyObject *module, PyObject *args) {
   PyObject *solution = _AoC_solve_y2022(day, unicode_input);
   if (!solution) {
     if (!PyErr_Occurred()) {
-      PyErr_Format(PyExc_RuntimeError, "failed solving day %u", day);
+      PyErr_Format(PyExc_RuntimeError, "unknown failure when solving day %d", day);
     }
     goto error;
   }
@@ -69,7 +68,7 @@ int main(int argc, char *const *argv) {
   // Make 'aoc_solve' available as a builtin module
   if (PyImport_AppendInittab(AoC_solve_module.m_name, PyInit_AoC_solve) == -1) {
     PyErr_Print();
-    fprintf(stderr, "Failed to extend builtin modules table with 'aoc_solve'\n");
+    fprintf(stderr, "Failed to extend builtin modules table with '%s'\n", AoC_solve_module.m_name);
     exit(1);
   }
   PyStatus status = _AoC_init_python(argc, argv);
