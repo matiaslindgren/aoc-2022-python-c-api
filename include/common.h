@@ -104,6 +104,7 @@ int _AoC_list_is_ok(PyObject *list) {
 
 PyObject *AoC_unicode_split(PyObject *s, const char *sep, Py_ssize_t maxsplit) {
   PyObject *unicode_sep = PyUnicode_FromString(sep);
+  // TODO do we need to check for NULL from PyUnicode_Split?
   PyObject *parts = PyUnicode_Split(s, unicode_sep, maxsplit);
   Py_DECREF(unicode_sep);
   return parts;
