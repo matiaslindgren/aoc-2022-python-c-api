@@ -67,6 +67,7 @@ PyObject *AoC_slurp_file(const char *filename) {
     goto error;
   }
 
+  raw_file_data[file_size] = 0;
   PyObject *file_data = PyUnicode_FromString(raw_file_data);
   free(raw_file_data);
   return file_data;
