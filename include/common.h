@@ -1,6 +1,8 @@
 #ifndef _AOC_COMMON_H_INCLUDED
 #define _AOC_COMMON_H_INCLUDED
 #define PY_SSIZE_T_CLEAN
+#include <stdio.h>
+
 #include "Python.h"
 
 // https://docs.python.org/3/c-api/init_config.html#initialization-with-pyconfig
@@ -29,6 +31,51 @@ PyStatus _AoC_init_python(int argc, char *const *argv) {
 done:
   PyConfig_Clear(&config);
   return status;
+}
+
+PyObject *AoC_slurp_file(const char *filename) {
+  FILE *fp = fopen(filename, "r");
+  if (!fp) {
+    PyErr_Format(PyExc_OSError, "failed opening file '%s' for reading\n", filename);
+    goto error;
+  }
+
+  if (fseek(fp, 0, SEEK_END)) {
+    PyErr_Format(PyExc_OSError, "failed seeking to the end of '%s'\n", filename);
+    goto error;
+  }
+
+  const long file_size = ftell(fp);
+  if (file_size == -1) {
+    PyErr_Format(PyExc_OSError, "could not get file size of '%s'\n", filename);
+    goto error;
+  }
+
+  char *raw_file_data = malloc((file_size + 1) * sizeof(char));
+  if (!raw_file_data) {
+    PyErr_NoMemory();
+    goto error;
+  }
+
+  rewind(fp);
+  size_t num_read = fread(raw_file_data, 1, file_size, fp);
+  fclose(fp);
+  // NOTE: wrong if file_size is larger than SIZE_MAX / 2
+  if (num_read < (size_t)file_size) {
+    PyErr_Format(PyExc_OSError, "tried reading %ld bytes from '%s' but read only %lu\n", file_size,
+                 filename, num_read);
+    goto error;
+  }
+
+  PyObject *file_data = PyUnicode_FromString(raw_file_data);
+  free(raw_file_data);
+  return file_data;
+
+error:
+  if (fp) {
+    fclose(fp);
+  }
+  return NULL;
 }
 
 void _AoC_debug_dump_lines(PyObject *lines) {
