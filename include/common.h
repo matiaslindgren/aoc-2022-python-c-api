@@ -1,8 +1,8 @@
 #ifndef _AOC_COMMON_H_INCLUDED
 #define _AOC_COMMON_H_INCLUDED
-#define PY_SSIZE_T_CLEAN
 #include <stdio.h>
 
+#define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
 // https://docs.python.org/3/c-api/init_config.html#initialization-with-pyconfig
