@@ -64,6 +64,7 @@ PyObject *AoC_slurp_file(const char *filename) {
   if (num_read < (size_t)file_size) {
     PyErr_Format(PyExc_OSError, "tried reading %ld bytes from '%s' but read only %lu\n", file_size,
                  filename, num_read);
+    free(raw_file_data);
     goto error;
   }
 
