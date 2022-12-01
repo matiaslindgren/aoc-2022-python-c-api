@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+set -ue
+
+ok=1
+
+for day in $(seq 1 25); do
+	f_correct="$(printf './txt/correct/%.2d.txt' $day)"
+	if [ -f "$f_correct" ]; then
+		expect="$(cat "$f_correct")"
+		output="$(./out/py_aoc -c "from aoc_solve import y2022; print(y2022($day))" 2> /dev/null)"
+		printf 'day %.2d: ' $day
+		if [ "$output" != "$expect" ]; then
+			printf "fail\n"
+			ok=0
+		else
+			printf "ok\n"
+		fi
+		printf 'expect: %s\n' "$expect"
+		printf 'output: %s\n' "$output"
+		printf '\n'
+	fi
+done
+
+if [ ! $ok ]; then
+	exit 1;
+fi
