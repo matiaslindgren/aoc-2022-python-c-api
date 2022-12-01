@@ -1,32 +1,35 @@
 #include "common.h"
 #include "d01.h"
-#include "d04.h"
 
-static PyObject *_AoC_solve_y2022(unsigned char day, PyObject *unicode_input) {
+static PyObject *_AoC_solve_y2022(int day, PyObject *unicode_input) {
   switch (day) {
     case 1: {
       return AoC_y2022_d01(unicode_input);
-    }
-    case 4: {
-      return AoC_y2022_d04(unicode_input);
     }
   }
   return NULL;
 }
 
 static PyObject *AoC_solve_y2022(PyObject *module, PyObject *args) {
-  unsigned char day;
-  PyObject *unicode_input;
-  if (!PyArg_ParseTuple(args, "bU", &day, &unicode_input)) {
-    PyErr_SetString(PyExc_RuntimeError,
-                    "Failed parsing positional args as 'unsigned char' and Python Unicode object");
+  int day;
+  if (!PyArg_ParseTuple(args, "i", &day)) {
+    PyErr_SetString(PyExc_RuntimeError, "failed parsing positional arg 'day' as int");
+    goto error;
+  }
+  if (!(1 <= day && day <= 25)) {
+    PyErr_Format(PyExc_ValueError, "positional arg 'day' must be in range [1, 25], not %d", day);
     goto error;
   }
 
+  char input_path[100];
+  sprintf(input_path, "./txt/input/%.2d.txt", day);
+  PyObject *unicode_input = AoC_slurp_file(input_path);
+
   PyObject *solution = _AoC_solve_y2022(day, unicode_input);
-  if (solution == NULL) {
-    // TODO add new exception to module
-    PyErr_Format(PyExc_RuntimeError, "Failed to find solution for day %u", day);
+  if (!solution) {
+    if (!PyErr_Occurred()) {
+      PyErr_Format(PyExc_RuntimeError, "failed solving day %u", day);
+    }
     goto error;
   }
   return solution;
