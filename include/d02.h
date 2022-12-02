@@ -2,54 +2,60 @@
 #define _AOC_Y2022_D02_H_INCLUDED
 #include "common.h"
 
+int _AoC_y2022_d02_encode_hand(int rock, int paper, int scissors) {
+  return rock + 2 * paper + 3 * scissors;
+}
+
 PyObject *AoC_y2022_d02(PyObject *unicode_input) {
   PyObject *lines = PyUnicode_Splitlines(unicode_input, 0);
   if (!lines) {
     PyErr_Format(PyExc_RuntimeError, "could not split input to lines");
     goto error;
   }
+
+  const long draw_points = 3;
+  const long win_points = 6;
+  long part1 = 0;
+  long part2 = 0;
   Py_ssize_t num_lines = PyList_Size(lines);
-  long ans_a = 0;
-  long ans_b = 0;
   for (Py_ssize_t i = 0; i < num_lines; ++i) {
     PyObject *line = PyList_GetItem(lines, i);
     Py_INCREF(line);
-    PyObject *parts = AoC_unicode_split(line, " ", 1);
+    PyObject *pair = AoC_unicode_split(line, " ", 1);
     Py_DECREF(line);
-    PyObject *lhs = PyList_GetItem(parts, 0);
+    PyObject *lhs = PyList_GetItem(pair, 0);
     Py_INCREF(lhs);
-    PyObject *rhs = PyList_GetItem(parts, 1);
+    PyObject *rhs = PyList_GetItem(pair, 1);
     Py_INCREF(rhs);
-    Py_DECREF(parts);
-    int lhs_rock = PyUnicode_CompareWithASCIIString(lhs, "A") == 0;
-    int lhs_paper = PyUnicode_CompareWithASCIIString(lhs, "B") == 0;
-    int lhs_scissors = PyUnicode_CompareWithASCIIString(lhs, "C") == 0;
-    int rhs_x = PyUnicode_CompareWithASCIIString(rhs, "X") == 0;
-    int rhs_y = PyUnicode_CompareWithASCIIString(rhs, "Y") == 0;
-    int rhs_z = PyUnicode_CompareWithASCIIString(rhs, "Z") == 0;
+    Py_DECREF(pair);
+    int lhs_a = AoC_PyUnicode_Equals_ASCII(lhs, "A");
+    int lhs_b = AoC_PyUnicode_Equals_ASCII(lhs, "B");
+    int lhs_c = AoC_PyUnicode_Equals_ASCII(lhs, "C");
     Py_DECREF(lhs);
+    int rhs_x = AoC_PyUnicode_Equals_ASCII(rhs, "X");
+    int rhs_y = AoC_PyUnicode_Equals_ASCII(rhs, "Y");
+    int rhs_z = AoC_PyUnicode_Equals_ASCII(rhs, "Z");
     Py_DECREF(rhs);
-    ans_a += 3 * ((lhs_rock && rhs_x) || (lhs_paper && rhs_y) || (lhs_scissors && rhs_z));
-    ans_a += 6 * ((lhs_rock && rhs_y) || (lhs_paper && rhs_z) || (lhs_scissors && rhs_x));
-    ans_a += rhs_x + 2 * rhs_y + 3 * rhs_z;
-    int lhs_choice = lhs_rock + 2 * lhs_paper + 3 * lhs_scissors;
-    if (rhs_x) {
-      ans_b += (lhs_choice - 1 + 2) % 3 + 1;
-    }
-    if (rhs_y) {
-      ans_b += 3 + lhs_choice;
-    }
-    if (rhs_z) {
-      ans_b += 6 + (lhs_choice - 1 + 1) % 3 + 1;
-    }
+    int lhs_hand = _AoC_y2022_d02_encode_hand(lhs_a, lhs_b, lhs_c);
+    int rhs_hand = _AoC_y2022_d02_encode_hand(rhs_x, rhs_y, rhs_z);
+    int hand_to_win_lhs = lhs_hand % 3 + 1;
+    int hand_to_lose_lhs = (lhs_hand + 1) % 3 + 1;
+    part1 += rhs_hand;
+    part1 += draw_points * (rhs_hand == lhs_hand);
+    part1 += win_points * (rhs_hand == hand_to_win_lhs);
+    part2 += rhs_x * hand_to_lose_lhs;
+    part2 += rhs_y * (draw_points + lhs_hand);
+    part2 += rhs_z * (win_points + hand_to_win_lhs);
   }
   Py_DECREF(lines);
-  PyObject *a = PyLong_FromLong(ans_a);
-  PyObject *b = PyLong_FromLong(ans_b);
-  PyObject *solution = PyUnicode_FromFormat("%S %S", a, b);
-  Py_DECREF(a);
-  Py_DECREF(b);
+
+  PyObject *part1_py = PyLong_FromLong(part1);
+  PyObject *part2_py = PyLong_FromLong(part2);
+  PyObject *solution = PyUnicode_FromFormat("%S %S", part1_py, part2_py);
+  Py_DECREF(part1_py);
+  Py_DECREF(part2_py);
   return solution;
+
 error:
   return NULL;
 }

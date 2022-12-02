@@ -5,7 +5,9 @@
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
-// https://docs.python.org/3/c-api/init_config.html#initialization-with-pyconfig
+/*
+ * https://docs.python.org/3/c-api/init_config.html#initialization-with-pyconfig
+ */
 PyStatus _AoC_init_python(int argc, char *const *argv) {
   PyConfig config;
   PyConfig_InitPythonConfig(&config);
@@ -111,5 +113,9 @@ PyObject *AoC_unicode_split(PyObject *s, const char *sep, Py_ssize_t maxsplit) {
 }
 
 PyObject *AoC_unicode_split_sections(PyObject *s) { return AoC_unicode_split(s, "\n\n", -1); }
+
+int AoC_PyUnicode_Equals_ASCII(PyObject *unicode, const char *str) {
+  return PyUnicode_CompareWithASCIIString(unicode, str) == 0;
+}
 
 #endif  // _AOC_COMMON_H_INCLUDED
