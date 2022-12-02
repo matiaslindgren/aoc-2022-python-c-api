@@ -26,17 +26,20 @@ static PyObject *AoC_solve_y2022(PyObject *module, PyObject *args) {
   char input_path[100];
   sprintf(input_path, "./txt/input/%.2d.txt", day);
   PyObject *unicode_input = AoC_slurp_file(input_path);
+  if (!unicode_input) {
+    goto error;
+  }
 
   PyObject *solution = _AoC_solve_y2022(day, unicode_input);
   if (!solution) {
-    if (!PyErr_Occurred()) {
-      PyErr_Format(PyExc_RuntimeError, "unknown failure when solving day %d", day);
-    }
     goto error;
   }
   return solution;
 
 error:
+  if (!PyErr_Occurred()) {
+    PyErr_Format(PyExc_RuntimeError, "unknown failure when solving day %d", day);
+  }
   return NULL;
 }
 
