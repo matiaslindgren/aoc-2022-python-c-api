@@ -31,14 +31,15 @@ static PyObject *AoC_solve_y2022(PyObject *module, PyObject *args) {
     goto error;
   }
 
-  char input_path[100];
-  sprintf(input_path, "./txt/input/%.2d.txt", day);
+  PyObject *input_path = PyUnicode_FromFormat("./txt/input/%.2d.txt", day);
   PyObject *unicode_input = AoC_slurp_file(input_path);
+  Py_DECREF(input_path);
   if (!unicode_input) {
     goto error;
   }
 
   PyObject *solution = _AoC_solve_y2022(day, unicode_input);
+  Py_DECREF(unicode_input);
   if (!solution) {
     goto error;
   }

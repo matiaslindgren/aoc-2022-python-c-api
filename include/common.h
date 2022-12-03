@@ -35,21 +35,36 @@ done:
   return status;
 }
 
-PyObject *AoC_slurp_file(const char *filename) {
-  FILE *fp = fopen(filename, "r");
+const char *AoC_unicode_as_raw_ascii(PyObject *unicode) {
+  PyObject *bytes = PyUnicode_AsASCIIString(unicode);
+  if (!bytes) {
+    return NULL;
+  }
+  return PyBytes_AsString(bytes);
+}
+
+PyObject *AoC_slurp_file(PyObject *filename) {
+  Py_INCREF(filename);
+  const char *raw_filename = AoC_unicode_as_raw_ascii(filename);
+  if (!raw_filename) {
+    Py_DECREF(filename);
+    return PyErr_Format(PyExc_OSError, "failed converting '%S' to const char*\n", filename);
+  }
+
+  FILE *fp = fopen(raw_filename, "r");
   if (!fp) {
-    PyErr_Format(PyExc_OSError, "failed opening file '%s' for reading\n", filename);
+    PyErr_Format(PyExc_OSError, "failed opening file '%S' for reading\n", filename);
     goto error;
   }
 
   if (fseek(fp, 0, SEEK_END)) {
-    PyErr_Format(PyExc_OSError, "failed seeking to the end of '%s'\n", filename);
+    PyErr_Format(PyExc_OSError, "failed seeking to the end of '%S'\n", filename);
     goto error;
   }
 
   const long file_size = ftell(fp);
   if (file_size == -1) {
-    PyErr_Format(PyExc_OSError, "could not get file size of '%s'\n", filename);
+    PyErr_Format(PyExc_OSError, "could not get file size of '%S'\n", filename);
     goto error;
   }
 
@@ -65,7 +80,7 @@ PyObject *AoC_slurp_file(const char *filename) {
   fclose(fp);
   // NOTE: wrong if file_size is larger than SIZE_MAX / 2
   if (num_read < (size_t)file_size) {
-    PyErr_Format(PyExc_OSError, "tried reading %ld bytes from '%s' but read only %lu\n", file_size,
+    PyErr_Format(PyExc_OSError, "tried reading %ld bytes from '%S' but read only %lu\n", file_size,
                  filename, num_read);
     Py_DECREF(py_buf);
     goto error;
@@ -76,12 +91,14 @@ PyObject *AoC_slurp_file(const char *filename) {
   if (!file_data) {
     goto error;
   }
+  Py_DECREF(filename);
   return file_data;
 
 error:
   if (fp) {
     fclose(fp);
   }
+  Py_DECREF(filename);
   return NULL;
 }
 
