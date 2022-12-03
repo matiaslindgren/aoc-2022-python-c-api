@@ -47,8 +47,12 @@ PyObject *AoC_slurp_file(PyObject *filename) {
   Py_INCREF(filename);
   const char *raw_filename = AoC_unicode_as_raw_ascii(filename);
   if (!raw_filename) {
+    if (!PyErr_Occurred()) {
+      PyErr_Format(PyExc_RuntimeError, "unknown failure when converting '%S' to const char*\n",
+                   filename);
+    }
     Py_DECREF(filename);
-    return PyErr_Format(PyExc_OSError, "failed converting '%S' to const char*\n", filename);
+    return NULL;
   }
 
   FILE *fp = fopen(raw_filename, "r");
