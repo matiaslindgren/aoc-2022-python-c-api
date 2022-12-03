@@ -35,27 +35,19 @@ done:
   return status;
 }
 
-const char *AoC_unicode_as_raw_ascii(PyObject *unicode) {
-  PyObject *bytes = PyUnicode_AsASCIIString(unicode);
-  if (!bytes) {
-    return NULL;
-  }
-  return PyBytes_AsString(bytes);
-}
-
 PyObject *AoC_slurp_file(PyObject *filename) {
   Py_INCREF(filename);
-  const char *raw_filename = AoC_unicode_as_raw_ascii(filename);
+  PyObject *raw_filename = PyUnicode_AsASCIIString(filename);
   if (!raw_filename) {
     if (!PyErr_Occurred()) {
-      PyErr_Format(PyExc_RuntimeError, "unknown failure when converting '%S' to const char*\n",
-                   filename);
+      PyErr_Format(PyExc_RuntimeError, "unknown failure when encoding '%S' as ASCII\n", filename);
     }
     Py_DECREF(filename);
     return NULL;
   }
 
-  FILE *fp = fopen(raw_filename, "r");
+  FILE *fp = fopen(PyBytes_AsString(raw_filename), "r");
+  Py_DECREF(raw_filename);
   if (!fp) {
     PyErr_Format(PyExc_OSError, "failed opening file '%S' for reading\n", filename);
     goto error;
