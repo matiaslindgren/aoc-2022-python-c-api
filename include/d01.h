@@ -4,6 +4,9 @@
 
 PyObject *_AoC_y2022_d01_parse_one_section(PyObject *section_str) {
   PyObject *calories_str = AoC_unicode_split(section_str, "\n", -1);
+  if (!calories_str) {
+    return NULL;
+  }
   PyObject *calories = PyList_New(0L);
   Py_ssize_t num_calories = PyList_Size(calories_str);
   for (Py_ssize_t i = 0; i < num_calories; ++i) {
@@ -29,7 +32,10 @@ error:
 }
 
 PyObject *_AoC_y2022_d01_parse_sections(PyObject *unicode_input) {
-  PyObject *sections_str = AoC_unicode_split_sections(unicode_input);
+  PyObject *sections_str = AoC_unicode_split(unicode_input, "\n\n", -1);
+  if (!sections_str) {
+    return NULL;
+  }
   PyObject *sections = PyList_New(0L);
   Py_ssize_t num_sections = PyList_Size(sections_str);
   for (Py_ssize_t i = 0; i < num_sections; ++i) {
@@ -57,6 +63,9 @@ error:
 
 PyObject *AoC_y2022_d01(PyObject *unicode_input) {
   PyObject *sections = _AoC_y2022_d01_parse_sections(unicode_input);
+  if (!sections) {
+    return NULL;
+  }
   Py_ssize_t num_sections = PyList_Size(sections);
   PyObject *calorie_sums = PyList_New(num_sections);
   for (Py_ssize_t i_section = 0; i_section < num_sections; ++i_section) {

@@ -106,37 +106,35 @@ error:
   return NULL;
 }
 
-void _AoC_debug_dump_lines(PyObject *lines) {
+int _AoC_dump_check_lines(PyObject *lines) {
+  if (!PyList_Check(lines)) {
+    return 1;
+  }
+  int errors = 0;
   Py_ssize_t num_lines = PyList_Size(lines);
   for (Py_ssize_t i = 0; i < num_lines; ++i) {
     PyObject *line = PyList_GetItem(lines, i);
-    PySys_FormatStdout("%zd: %S\n", i, line);
-  }
-}
-
-int _AoC_list_is_ok(PyObject *list) {
-  if (!PyList_CheckExact(list)) {
-    return 0;
-  }
-  Py_ssize_t n = PyList_Size(list);
-  for (Py_ssize_t i = 0; i < n; ++i) {
-    PyObject *item = PyList_GetItem(list, i);
-    if (item == NULL) {
-      return 0;
+    if (!line) {
+      PySys_FormatStdout("!! %zd: NULL\n", i);
+      errors = 1;
+    } else {
+      PySys_FormatStdout("%zd: %S\n", i, line);
     }
   }
-  return 1;
+  return errors;
 }
 
 PyObject *AoC_unicode_split(PyObject *s, const char *sep, Py_ssize_t maxsplit) {
   PyObject *unicode_sep = PyUnicode_FromString(sep);
-  // TODO do we need to check for NULL from PyUnicode_Split?
   PyObject *parts = PyUnicode_Split(s, unicode_sep, maxsplit);
   Py_DECREF(unicode_sep);
+  if (!parts) {
+    PyErr_Format(PyExc_RuntimeError, "failed splitting input %zd times at '%S'", maxsplit,
+                 unicode_sep);
+    return NULL;
+  }
   return parts;
 }
-
-PyObject *AoC_unicode_split_sections(PyObject *s) { return AoC_unicode_split(s, "\n\n", -1); }
 
 int AoC_PyUnicode_Equals_ASCII(PyObject *unicode, const char *str) {
   return PyUnicode_CompareWithASCIIString(unicode, str) == 0;
