@@ -7,15 +7,12 @@
 
 static PyObject *_AoC_solve_y2022(int day, PyObject *unicode_input) {
   switch (day) {
-    case 1: {
+    case 1:
       return AoC_y2022_d01(unicode_input);
-    }
-    case 2: {
+    case 2:
       return AoC_y2022_d02(unicode_input);
-    }
-    case 3: {
+    case 3:
       return AoC_y2022_d03(unicode_input);
-    }
   }
   return PyErr_Format(PyExc_ValueError, "no solution implemented for day %d", day);
 }
