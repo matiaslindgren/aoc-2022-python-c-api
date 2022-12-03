@@ -19,9 +19,9 @@ PyObject *AoC_y2022_d03(PyObject *unicode_input) {
     PyObject *line = PyList_GetItem(lines, i);
     Py_INCREF(line);
     Py_ssize_t n = PyUnicode_GetLength(line);
-    if (n % 2) {
-      Py_DECREF(lines);
+    if (n == 0 || n % 2) {
       Py_DECREF(line);
+      Py_DECREF(lines);
       PyErr_Format(PyExc_RuntimeError, "line %zd length %zd is not divisible by 2", i, n);
       goto error;
     }
