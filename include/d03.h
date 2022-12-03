@@ -2,12 +2,17 @@
 #define _AOC_Y2022_D03_H_INCLUDED
 #include "common.h"
 
+int _AoC_y2022_d03_item_priority(Py_UCS4 ch) {
+  return Py_UNICODE_ISLOWER(ch) * (ch - 'a' + 1) + Py_UNICODE_ISUPPER(ch) * (ch - 'A' + 27);
+}
+
 PyObject *AoC_y2022_d03(PyObject *unicode_input) {
   PyObject *lines = PyUnicode_Splitlines(unicode_input, 0);
   if (!lines) {
     PyErr_Format(PyExc_RuntimeError, "could not split input into lines");
     goto error;
   }
+
   Py_ssize_t num_lines = PyList_Size(lines);
   long part1 = 0;
   for (Py_ssize_t i = 0; i < num_lines; ++i) {
@@ -38,9 +43,9 @@ PyObject *AoC_y2022_d03(PyObject *unicode_input) {
     }
     Py_UCS4 ch = PyUnicode_ReadChar(common, 0);
     Py_DECREF(common);
-    part1 += Py_UNICODE_ISLOWER(ch) * (ch - 'a' + 1);
-    part1 += Py_UNICODE_ISUPPER(ch) * (ch - 'A' + 27);
+    part1 += _AoC_y2022_d03_item_priority(ch);
   }
+
   long part2 = 0;
   for (Py_ssize_t i = 0; i < num_lines; i += 3) {
     PyObject *line1 = PyList_GetItem(lines, i);
@@ -68,8 +73,7 @@ PyObject *AoC_y2022_d03(PyObject *unicode_input) {
     }
     Py_UCS4 ch = PyUnicode_ReadChar(common, 0);
     Py_DECREF(common);
-    part2 += Py_UNICODE_ISLOWER(ch) * (ch - 'a' + 1);
-    part2 += Py_UNICODE_ISUPPER(ch) * (ch - 'A' + 27);
+    part2 += _AoC_y2022_d03_item_priority(ch);
   }
   Py_DECREF(lines);
 
