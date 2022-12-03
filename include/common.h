@@ -53,26 +53,29 @@ PyObject *AoC_slurp_file(const char *filename) {
     goto error;
   }
 
-  char *raw_file_data = malloc((file_size + 1) * sizeof(char));
-  if (!raw_file_data) {
+  PyObject *py_buf = PyBytes_FromStringAndSize(NULL, file_size);
+  if (!py_buf) {
     PyErr_NoMemory();
     goto error;
   }
 
+  char *buf = PyBytes_AsString(py_buf);
   rewind(fp);
-  size_t num_read = fread(raw_file_data, 1, file_size, fp);
+  size_t num_read = fread(buf, 1, file_size, fp);
   fclose(fp);
   // NOTE: wrong if file_size is larger than SIZE_MAX / 2
   if (num_read < (size_t)file_size) {
     PyErr_Format(PyExc_OSError, "tried reading %ld bytes from '%s' but read only %lu\n", file_size,
                  filename, num_read);
-    free(raw_file_data);
+    Py_DECREF(py_buf);
     goto error;
   }
 
-  raw_file_data[file_size] = 0;
-  PyObject *file_data = PyUnicode_FromString(raw_file_data);
-  free(raw_file_data);
+  PyObject *file_data = PyUnicode_FromEncodedObject(py_buf, "utf-8", NULL);
+  Py_DECREF(py_buf);
+  if (!file_data) {
+    goto error;
+  }
   return file_data;
 
 error:
