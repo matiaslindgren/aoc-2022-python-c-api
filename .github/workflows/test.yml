@@ -1,0 +1,29 @@
+name: build and test
+
+on: push
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: cache compiled aoc-python interpreter
+      id: cache-aoc-python
+      uses: actions/cache@v3
+      with:
+        path: |
+          Python.tgz
+          py_src
+          python
+        key: ${{ runner.os }}-aoc-python
+
+    - name: download and compile aoc-python
+      if: steps.cache-aoc-python.outputs.cache-hit != 'true'
+      run: make python
+
+    - name: build solutions
+      run: make py_aoc
+
+    - name: test solutions
+      run: ./test

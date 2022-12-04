@@ -8,6 +8,9 @@ CFLAGS := \
 	-Werror \
 	-fsanitize=undefined
 
+.PHONY: py_aoc
+py_aoc: $(OUT)/py_aoc
+
 $(OUT)/py_aoc: $(OUT)/%: src/%.c include/common.h $(wildcard include/d??.h) $(OUT) python
 	$(CLANG) \
 		$(CFLAGS) \
