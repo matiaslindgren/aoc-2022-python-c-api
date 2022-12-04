@@ -132,4 +132,20 @@ int AoC_PyUnicode_Equals_ASCII(PyObject *unicode, const char *str) {
   return PyUnicode_CompareWithASCIIString(unicode, str) == 0;
 }
 
+PyObject *AoC_PyLong_Add(PyObject *lhs_py, long rhs) {
+  PyObject *rhs_py = PyLong_FromLong(rhs);
+  if (!rhs_py) {
+    return PyErr_Format(PyExc_RuntimeError, "failed creating PyLong object from %ld", rhs);
+  }
+  PyObject *res = PyNumber_Add(lhs_py, rhs_py);
+  if (!res) {
+    PyErr_Format(PyExc_RuntimeError, "failed computing %S + %S", lhs_py, rhs_py);
+    Py_DECREF(rhs_py);
+    return NULL;
+  }
+  Py_DECREF(lhs_py);
+  Py_DECREF(rhs_py);
+  return res;
+}
+
 #endif  // _AOC_COMMON_H_INCLUDED
