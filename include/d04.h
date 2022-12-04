@@ -12,26 +12,26 @@ PyObject *AoC_y2022_d04(PyObject *unicode_input) {
   }
 
   Py_ssize_t num_lines = PyList_Size(lines);
-  long part1 = 0;
-  long part2 = 0;
+  PyObject *part1 = PyLong_FromLong(0L);
+  PyObject *part2 = PyLong_FromLong(0L);
   for (Py_ssize_t i = 0; i < num_lines; ++i) {
     PyObject *line = PyUnicode_AsASCIIString(PyList_GetItem(lines, i));
     if (!line) {
       goto error;
     }
-    size_t lhs_a, lhs_b, rhs_a, rhs_b;
-    sscanf(PyBytes_AsString(line), "%zd-%zd,%zd-%zd\n", &lhs_a, &lhs_b, &rhs_a, &rhs_b);
-    part1 += (lhs_a <= rhs_a && rhs_b <= lhs_b) || (rhs_a <= lhs_a && lhs_b <= rhs_b);
-    part2 += (lhs_a <= rhs_a && rhs_a <= lhs_b) || (rhs_a <= lhs_a && lhs_a <= rhs_b);
+    long lhs_a, lhs_b, rhs_a, rhs_b;
+    sscanf(PyBytes_AsString(line), "%ld-%ld,%ld-%ld\n", &lhs_a, &lhs_b, &rhs_a, &rhs_b);
+    int full_contained = (lhs_a <= rhs_a && rhs_b <= lhs_b) || (rhs_a <= lhs_a && lhs_b <= rhs_b);
+    int part_contained = (lhs_a <= rhs_a && rhs_a <= lhs_b) || (rhs_a <= lhs_a && lhs_a <= rhs_b);
+    part1 = AoC_PyLong_Add(part1, full_contained);
+    part2 = AoC_PyLong_Add(part2, part_contained);
     Py_DECREF(line);
   }
   Py_DECREF(lines);
 
-  PyObject *part1_py = PyLong_FromLong(part1);
-  PyObject *part2_py = PyLong_FromLong(part2);
-  PyObject *solution = PyUnicode_FromFormat("%S %S", part1_py, part2_py);
-  Py_DECREF(part1_py);
-  Py_DECREF(part2_py);
+  PyObject *solution = PyUnicode_FromFormat("%S %S", part1, part2);
+  Py_DECREF(part1);
+  Py_DECREF(part2);
   return solution;
 
 error:
