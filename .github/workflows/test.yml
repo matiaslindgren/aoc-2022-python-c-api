@@ -15,12 +15,12 @@ jobs:
         path: python
         key: ${{ runner.os }}-aoc-python
 
-    - name: download and compile aoc-python
+    - name: download python and compile aoc-python
       if: steps.cache-aoc-python.outputs.cache-hit != 'true'
       run: make python
 
-    - name: build solutions
+    - name: build aoc solutions
       run: make py_aoc
 
-    - name: test solutions
+    - name: test aoc solutions
       run: ./test
