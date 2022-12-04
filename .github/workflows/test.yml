@@ -12,10 +12,7 @@ jobs:
       id: cache-aoc-python
       uses: actions/cache@v3
       with:
-        path: |
-          Python.tgz
-          py_src
-          python
+        path: python
         key: ${{ runner.os }}-aoc-python
 
     - name: download and compile aoc-python
