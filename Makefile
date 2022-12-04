@@ -11,7 +11,7 @@ CFLAGS := \
 .PHONY: py_aoc
 py_aoc: $(OUT)/py_aoc
 
-$(OUT)/py_aoc: $(OUT)/%: src/%.c include/common.h $(wildcard include/d??.h) $(OUT) python
+$(OUT)/py_aoc: $(OUT)/%: src/%.c include/common.h $(wildcard include/d??.h) $(OUT)
 	$(CLANG) \
 		$(CFLAGS) \
 		$(shell ./python/bin/python3-config --cflags --embed) \
