@@ -8,17 +8,19 @@ PyObject *_AoC_y2022_d05_unicode_concat(PyObject *lhs, PyObject *rhs) {
   return lhs;
 }
 
+enum parts { part1, part2, num_parts };
+
 PyObject *AoC_y2022_d05(PyObject *unicode_input) {
   const Py_ssize_t num_stacks = 9;
   // these need to be DECREF'd on return
-  PyObject *stacks[2][num_stacks];
+  PyObject *stacks[num_parts][num_stacks];
   PyObject *sections = NULL;
   PyObject *moves = NULL;
   PyObject *solution = NULL;
 
   for (Py_ssize_t i = 0; i < num_stacks; ++i) {
-    for (size_t part_idx = 0; part_idx < 2; ++part_idx) {
-      stacks[part_idx][i] = PyList_New(0);
+    for (size_t part = part1; part < num_parts; ++part) {
+      stacks[part][i] = PyList_New(0);
     }
   }
 
@@ -36,8 +38,8 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
         if (!crate) {
           goto done;
         }
-        for (size_t part_idx = 0; part_idx < 2; ++part_idx) {
-          if (PyList_Append(stacks[part_idx][stack_idx], crate) == -1) {
+        for (size_t part = part1; part < 2; ++part) {
+          if (PyList_Append(stacks[part][stack_idx], crate) == -1) {
             goto done;
           }
         }
@@ -68,30 +70,30 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
       goto done;
     }
     for (long num_left = move_count; num_left > 0; --num_left) {
-      PyObject *crate = PyList_GetItem(stacks[0][src], 0);
-      if (PyList_Insert(stacks[0][dst], 0, crate) == -1) {
+      PyObject *crate = PyList_GetItem(stacks[part1][src], 0);
+      if (PyList_Insert(stacks[part1][dst], 0, crate) == -1) {
         goto done;
       }
-      if (PySequence_DelItem(stacks[0][src], 0) == -1) {
+      if (PySequence_DelItem(stacks[part1][src], 0) == -1) {
         goto done;
       }
     }
     for (long num_left = move_count; num_left > 0; --num_left) {
       const Py_ssize_t last_crate_pos = num_left - 1;
-      PyObject *crate = PyList_GetItem(stacks[1][src], last_crate_pos);
-      if (PyList_Insert(stacks[1][dst], 0, crate) == -1) {
+      PyObject *crate = PyList_GetItem(stacks[part2][src], last_crate_pos);
+      if (PyList_Insert(stacks[part2][dst], 0, crate) == -1) {
         goto done;
       }
-      if (PySequence_DelItem(stacks[1][src], last_crate_pos) == -1) {
+      if (PySequence_DelItem(stacks[part2][src], last_crate_pos) == -1) {
         goto done;
       }
     }
   }
 
   solution = PyUnicode_FromString("");
-  for (size_t part_idx = 0; part_idx < 2; ++part_idx) {
+  for (size_t part = part1; part < num_parts; ++part) {
     for (Py_ssize_t i = 0; i < num_stacks; ++i) {
-      PyObject *top_crate = PyList_GetItem(stacks[part_idx][i], 0);
+      PyObject *top_crate = PyList_GetItem(stacks[part][i], 0);
       solution = _AoC_y2022_d05_unicode_concat(solution, top_crate);
     }
     solution = _AoC_y2022_d05_unicode_concat(solution, PyUnicode_FromString(" "));
@@ -104,9 +106,9 @@ done:
   if (moves) {
     Py_DECREF(moves);
   }
-  for (size_t part_idx = 0; part_idx < 2; ++part_idx) {
+  for (size_t part = part1; part < num_parts; ++part) {
     for (size_t stack_idx = 0; stack_idx < num_stacks; ++stack_idx) {
-      PyObject *stack = stacks[part_idx][stack_idx];
+      PyObject *stack = stacks[part][stack_idx];
       for (Py_ssize_t i = 0; i < PyList_Size(stack); ++i) {
         Py_DECREF(PyList_GetItem(stack, i));
       }
