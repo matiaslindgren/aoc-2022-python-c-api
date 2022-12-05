@@ -38,7 +38,7 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
         if (!crate) {
           goto done;
         }
-        for (size_t part = part1; part < 2; ++part) {
+        for (size_t part = part1; part < num_parts; ++part) {
           if (PyList_Append(stacks[part][stack_idx], crate) == -1) {
             goto done;
           }
