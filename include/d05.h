@@ -69,23 +69,16 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
     if (PyErr_Occurred()) {
       goto done;
     }
-    for (long num_left = move_count; num_left > 0; --num_left) {
-      PyObject *crate = PyList_GetItem(stacks[part1][src], 0);
-      if (PyList_Insert(stacks[part1][dst], 0, crate) == -1) {
-        goto done;
-      }
-      if (PySequence_DelItem(stacks[part1][src], 0) == -1) {
-        goto done;
-      }
-    }
-    for (long num_left = move_count; num_left > 0; --num_left) {
-      const Py_ssize_t last_crate_pos = num_left - 1;
-      PyObject *crate = PyList_GetItem(stacks[part2][src], last_crate_pos);
-      if (PyList_Insert(stacks[part2][dst], 0, crate) == -1) {
-        goto done;
-      }
-      if (PySequence_DelItem(stacks[part2][src], last_crate_pos) == -1) {
-        goto done;
+    for (size_t part = part1; part < num_parts; ++part) {
+      for (long num_left = move_count; num_left > 0; --num_left) {
+        const Py_ssize_t crate_pos = (part == part2) ? num_left - 1 : 0;
+        PyObject *crate = PyList_GetItem(stacks[part][src], crate_pos);
+        if (PyList_Insert(stacks[part][dst], 0, crate) == -1) {
+          goto done;
+        }
+        if (PySequence_DelItem(stacks[part][src], crate_pos) == -1) {
+          goto done;
+        }
       }
     }
   }
