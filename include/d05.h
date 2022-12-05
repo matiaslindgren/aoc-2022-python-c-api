@@ -2,6 +2,12 @@
 #define _AOC_Y2022_D05_H_INCLUDED
 #include "common.h"
 
+PyObject *_AoC_y2022_d05_unicode_concat(PyObject *lhs, PyObject *rhs) {
+  PyObject *tmp = PyUnicode_Concat(lhs, rhs);
+  Py_SETREF(lhs, tmp);
+  return lhs;
+}
+
 PyObject *AoC_y2022_d05(PyObject *unicode_input) {
   const Py_ssize_t num_stacks = 9;
   // these need to be DECREF'd on return
@@ -86,13 +92,9 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
   for (size_t part_idx = 0; part_idx < 2; ++part_idx) {
     for (Py_ssize_t i = 0; i < num_stacks; ++i) {
       PyObject *top_crate = PyList_GetItem(stacks[part_idx][i], 0);
-      PyObject *tmp = PyUnicode_Concat(solution, top_crate);
-      Py_SETREF(solution, tmp);
+      solution = _AoC_y2022_d05_unicode_concat(solution, top_crate);
     }
-    PyObject *sep = PyUnicode_FromString(" ");
-    PyObject *tmp = PyUnicode_Concat(solution, sep);
-    Py_DECREF(sep);
-    Py_SETREF(solution, tmp);
+    solution = _AoC_y2022_d05_unicode_concat(solution, PyUnicode_FromString(" "));
   }
 
 done:
