@@ -20,7 +20,7 @@
 `py_aoc` is a regular Python interpreter, but with a builtin-function `aoc_solve.y2022` that works as an entrypoint for solving a particular AoC day, say the 4th:
 ```
 > ./out/py_aoc
-Python 3.11.0 (main, Nov 19 2022, 13:18:35) [GCC 10.2.1 20210110] on linux
+Python 3.11.0 (main, Dec  5 2022, 23:22:09) [GCC 10.2.1 20210110] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>> from aoc_solve import y2022
 >>> y2022(4)
