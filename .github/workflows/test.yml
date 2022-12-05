@@ -3,6 +3,11 @@ name: build and test
 on:
   push:
     branches: main
+    paths:
+      - include/*.h
+      - src/*.c
+      - Makefile
+      - txt
 
 jobs:
   build_and_test:

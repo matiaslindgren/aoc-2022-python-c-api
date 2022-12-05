@@ -2,7 +2,7 @@
 
 ![](./haha.png)
 
-# Usage
+## Usage
 
 1. Download and build Python from source:
     ```
