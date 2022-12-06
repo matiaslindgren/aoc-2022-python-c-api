@@ -8,52 +8,57 @@ PyObject *AoC_y2022_d01(PyObject *unicode_input) {
     return NULL;
   }
 
-  PyObject *solution = NULL;
-  PyObject *sums = PyList_New(0);
-  PyObject *sum = PyLong_FromLong(0L);
+  PyObject *tail = PyUnicode_FromString("");
+  if (PyList_Append(lines, tail) < 0) {
+    Py_DECREF(tail);
+    Py_DECREF(lines);
+    return NULL;
+  }
+  Py_DECREF(tail);
 
-  for (Py_ssize_t i = 0; i < PyList_Size(lines); ++i) {
+  PyObject *solution = NULL;
+  PyObject *top3 = PyList_New(0);
+  PyObject *current_sum = PyLong_FromLong(0L);
+
+  Py_ssize_t num_lines = PyList_Size(lines);
+  for (Py_ssize_t i = 0; i < num_lines; ++i) {
     PyObject *line = PyList_GetItem(lines, i);
     if (PyUnicode_GET_LENGTH(line) == 0) {
-      if (PyList_Append(sums, sum) < 0) {
+      if (PyList_Append(top3, current_sum) < 0) {
         goto done;
       }
-      Py_DECREF(sum);
-      sum = PyLong_FromLong(0L);
+      Py_DECREF(current_sum);
+      current_sum = PyLong_FromLong(0L);
+      if (PyList_Sort(top3) == -1) {
+        goto done;
+      }
+      if (PyList_Size(top3) == 4 && PySequence_DelItem(top3, 0) < 0) {
+        goto done;
+      }
     } else {
       PyObject *calories = PyLong_FromUnicodeObject(line, 10);
-      PyObject *tmp = PyNumber_Add(sum, calories);
+      PyObject *tmp = PyNumber_Add(current_sum, calories);
       Py_DECREF(calories);
-      Py_SETREF(sum, tmp);
+      Py_SETREF(current_sum, tmp);
     }
   }
-  if (PyList_Append(sums, sum) < 0) {
-    goto done;
-  }
 
-  if (PyList_Sort(sums) == -1) {
-    goto done;
-  }
-  if (PyList_Reverse(sums) == -1) {
-    goto done;
-  }
-
-  PyObject *top1 = PyList_GetItem(sums, 0);
-  Py_INCREF(top1);
-  PyObject *top3 = PyLong_FromLong(0L);
+  PyObject *part1 = PyList_GetItem(top3, 2);
+  PyObject *part2 = PyLong_FromLong(0L);
   for (Py_ssize_t i = 0; i < 3; ++i) {
-    PyObject *cal = PyList_GetItem(sums, i);
-    PyObject *res = PyNumber_Add(top3, cal);
-    Py_SETREF(top3, res);
+    PyObject *cal = PyList_GetItem(top3, i);
+    PyObject *tmp = PyNumber_Add(part2, cal);
+    Py_SETREF(part2, tmp);
   }
-  solution = PyUnicode_FromFormat("%S %S", top1, top3);
-  Py_DECREF(top1);
-  Py_DECREF(top3);
+  solution = PyUnicode_FromFormat("%S %S", part1, part2);
+  Py_DECREF(part1);
+  Py_DECREF(part2);
 
 done:
-  Py_DECREF(sum);
-  Py_DECREF(sums);
+  Py_DECREF(current_sum);
+  Py_DECREF(top3);
   Py_DECREF(lines);
   return solution;
 }
+
 #endif  // _AOC_Y2022_D01_H_INCLUDED
