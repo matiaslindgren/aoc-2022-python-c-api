@@ -1,6 +1,8 @@
-# Advent of Code 2022 and the Python C API
-
 ![](./haha.png)
+
+# Advent of Code 2022 - Python C API
+
+Just a stupid Rube Goldberg machine, nothing intelligent to see here.
 
 ## Usage
 
