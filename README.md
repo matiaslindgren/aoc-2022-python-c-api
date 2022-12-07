@@ -2,7 +2,8 @@
 
 # Advent of Code 2022 - Python C API
 
-Just a stupid Rube Goldberg machine, nothing intelligent to see here.
+Silly little Rube Goldberg machine.
+Nothing intelligent to see here.
 
 ## Usage
 
@@ -19,7 +20,9 @@ Just a stupid Rube Goldberg machine, nothing intelligent to see here.
     ./solve 1
     ```
 
-`py_aoc` is a regular Python interpreter, but with a builtin-function `aoc_solve.y2022` that works as an entrypoint for solving a particular AoC day, say the 4th:
+`py_aoc` is a regular Python interpreter with a builtin-function `aoc_solve.y2022` that works as an entrypoint for solving a particular AoC day.
+
+For example, solving day 4:
 ```
 > ./out/py_aoc
 Python 3.11.0 (main, Dec  5 2022, 23:22:09) [GCC 10.2.1 20210110] on linux
@@ -27,9 +30,4 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>> from aoc_solve import y2022
 >>> y2022(4)
 '456 808'
-```
-
-The only thing `./solve 4` would do is
-```
-./out/py_aoc -c "from aoc_solve import y2022; print(y2022(4))"
 ```
