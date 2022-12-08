@@ -22,7 +22,7 @@ Nothing intelligent to see here.
 
 ## Explain
 
-`py_aoc` is a program that runs the [Python interpreter](./src/py_aoc.c#L105) by linking to the compiled `libpython3` library (should appear under `./python/lib` after running `make python`):
+`py_aoc` is a program that runs the [Python interpreter](./src/py_aoc.c#L105) by [linking](./Makefile#L14-L21) to the [compiled](./Makefile#L48-L50) `libpython3` library (should appear under `./python/lib` after running `make python`):
 ```
 > ./out/py_aoc
 Python 3.11.0 (main, Dec  5 2022, 23:22:09) [GCC 10.2.1 20210110] on linux
@@ -31,7 +31,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 hi
 ```
 
-However, `py_aoc` also contains a builtin-module `aoc_solve` with a single function named `y2022`, which accepts as argument the day to solve.
+However, `py_aoc` also contains a [builtin-module `aoc_solve`](./src/py_aoc.c#L88-L90) with a single function named [`y2022`](./src/py_aoc.c#L72-L77), which accepts the day to solve as the only argument.
 
 For example, solving day 1:
 ```
