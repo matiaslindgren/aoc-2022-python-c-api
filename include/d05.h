@@ -30,7 +30,7 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
   }
 
   PyObject *stacks_str = PyList_GetItem(sections, 0);
-  const Py_ssize_t stack_str_len = PyUnicode_GET_LENGTH(stacks_str);
+  const Py_ssize_t stack_str_len = PyUnicode_GetLength(stacks_str);
   for (size_t stack_idx = 0; stack_idx < num_stacks; ++stack_idx) {
     for (Py_ssize_t i = 1 + 4 * stack_idx; i < stack_str_len; i += 4 * num_stacks) {
       if (Py_UNICODE_ISALPHA(PyUnicode_ReadChar(stacks_str, i))) {

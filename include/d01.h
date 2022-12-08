@@ -23,7 +23,7 @@ PyObject *AoC_y2022_d01(PyObject *unicode_input) {
   Py_ssize_t num_lines = PyList_Size(lines);
   for (Py_ssize_t i = 0; i < num_lines; ++i) {
     PyObject *line = PyList_GetItem(lines, i);
-    if (PyUnicode_GET_LENGTH(line) == 0) {
+    if (PyUnicode_GetLength(line) == 0) {
       if (PyList_Append(top3, current_sum) < 0) {
         goto done;
       }
