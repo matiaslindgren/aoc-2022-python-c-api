@@ -62,6 +62,9 @@ PyObject *AoC_y2022_d03(PyObject *unicode_input) {
     Py_DECREF(line3);
     PyObject *intersection12_ = PyNumber_And(bag1, bag2);
     PyObject *intersection1_3 = PyNumber_And(bag1, bag3);
+    Py_DECREF(bag1);
+    Py_DECREF(bag2);
+    Py_DECREF(bag3);
     PyObject *intersection123 = PyNumber_And(intersection12_, intersection1_3);
     PyObject *common = PySet_Pop(intersection123);
     Py_DECREF(intersection12_);
