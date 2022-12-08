@@ -34,17 +34,16 @@ done:
 
 PyObject *AoC_slurp_file(PyObject *filename) {
   Py_INCREF(filename);
-  PyObject *raw_filename = PyUnicode_AsASCIIString(filename);
-  if (!raw_filename) {
+  const char *raw_filename = PyUnicode_AsUTF8(filename);
+  if (!raw_filename || PyErr_Occurred()) {
     if (!PyErr_Occurred()) {
-      PyErr_Format(PyExc_RuntimeError, "unknown failure when encoding '%S' as ASCII\n", filename);
+      PyErr_Format(PyExc_RuntimeError, "failed encoding filename '%S' as UTF-8\n", filename);
     }
     Py_DECREF(filename);
     return NULL;
   }
 
-  FILE *fp = fopen(PyBytes_AsString(raw_filename), "r");
-  Py_DECREF(raw_filename);
+  FILE *fp = fopen(raw_filename, "r");
   if (!fp) {
     PyErr_Format(PyExc_OSError, "failed opening file '%S' for reading\n", filename);
     goto error;
