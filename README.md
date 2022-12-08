@@ -5,6 +5,14 @@
 Silly little Rube Goldberg machine.
 Nothing intelligent to see here.
 
+## Requirements
+
+- clang
+- gcc
+- make
+- curl
+- tar
+
 ## Usage
 
 1. Download and build Python from source:
