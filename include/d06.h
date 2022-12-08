@@ -6,7 +6,7 @@ Py_ssize_t _AoC_y2022_d06_find_distinct(PyObject *input, Py_ssize_t msg_len) {
   if (PyUnicode_READY(input) < 0) {
     return -1;
   }
-  Py_ssize_t input_len = PyUnicode_GET_LENGTH(input);
+  Py_ssize_t input_len = PyUnicode_GetLength(input);
   Py_ssize_t rhs = msg_len;
   for (; rhs < input_len; ++rhs) {
     PyObject *window = PyUnicode_Substring(input, rhs - msg_len, rhs);
