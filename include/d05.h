@@ -93,12 +93,8 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
   }
 
 done:
-  if (sections) {
-    Py_DECREF(sections);
-  }
-  if (moves) {
-    Py_DECREF(moves);
-  }
+  Py_XDECREF(sections);
+  Py_XDECREF(moves);
   for (size_t part = part1; part < num_parts; ++part) {
     for (size_t stack_idx = 0; stack_idx < num_stacks; ++stack_idx) {
       PyObject *stack = stacks[part][stack_idx];
