@@ -42,9 +42,9 @@ struct knot {
 
 PyObject *AoC_y2022_d09(PyObject *unicode_input) {
   PyObject *solution = NULL;
+  PyObject *knot1_visits = PySet_New(NULL);
+  PyObject *knot9_visits = PySet_New(NULL);
   PyObject *lines = PyUnicode_Splitlines(unicode_input, 0);
-  PyObject *knot1_visited = PySet_New(NULL);
-  PyObject *knot9_visited = PySet_New(NULL);
   if (!lines) {
     PyErr_Format(PyExc_RuntimeError, "could not split input into lines");
     goto error;
@@ -55,7 +55,7 @@ PyObject *AoC_y2022_d09(PyObject *unicode_input) {
   for (Py_ssize_t i = 0; i < PyList_Size(lines); ++i) {
     PyObject *line = PyList_GetItem(lines, i);
     long num_steps = _AoC_y2022_d09_parse_num_steps(line);
-    for (; num_steps > 0; --num_steps) {
+    for (long step = 0; step < num_steps; ++step) {
       switch (PyUnicode_READ_CHAR(line, 0)) {
         case 'U': {
           --(knots[0].y);
@@ -66,28 +66,28 @@ PyObject *AoC_y2022_d09(PyObject *unicode_input) {
         case 'D': {
           ++(knots[0].y);
         } break;
-        case 'L':
+        case 'L': {
           --(knots[0].x);
-          break;
+        } break;
         default:
           goto error;
       }
       for (size_t k = 1; k < sizeof(knots) / sizeof(knot); ++k) {
         _AoC_y2022_d09_step(knots[k - 1].y, knots[k - 1].x, &(knots[k].y), &(knots[k].x));
       }
-      PySet_Add(knot1_visited, _AoC_y2022_d09_make_pair(knots[1].y, knots[1].x));
-      PySet_Add(knot9_visited, _AoC_y2022_d09_make_pair(knots[9].y, knots[9].x));
+      PySet_Add(knot1_visits, _AoC_y2022_d09_make_pair(knots[1].y, knots[1].x));
+      PySet_Add(knot9_visits, _AoC_y2022_d09_make_pair(knots[9].y, knots[9].x));
     }
   }
 
-  Py_ssize_t part1 = PySet_Size(knot1_visited);
-  Py_ssize_t part2 = PySet_Size(knot9_visited);
+  Py_ssize_t part1 = PySet_Size(knot1_visits);
+  Py_ssize_t part2 = PySet_Size(knot9_visits);
   solution = PyUnicode_FromFormat("%zd %zd", part1, part2);
 
 error:
   Py_XDECREF(lines);
-  Py_XDECREF(knot1_visited);
-  Py_XDECREF(knot9_visited);
+  Py_XDECREF(knot1_visits);
+  Py_XDECREF(knot9_visits);
   return solution;
 }
 
