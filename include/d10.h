@@ -1,5 +1,7 @@
 #ifndef _AOC_Y2022_D10_H_INCLUDED
 #define _AOC_Y2022_D10_H_INCLUDED
+#include <math.h>
+
 #include "common.h"
 
 const size_t num_rows = 6;
