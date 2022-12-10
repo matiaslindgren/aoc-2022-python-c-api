@@ -10,6 +10,7 @@
 #include "d07.h"
 #include "d08.h"
 #include "d09.h"
+#include "d10.h"
 
 static PyObject *_AoC_solve_y2022(int day, PyObject *unicode_input) {
   switch (day) {
@@ -31,6 +32,8 @@ static PyObject *_AoC_solve_y2022(int day, PyObject *unicode_input) {
       return AoC_y2022_d08(unicode_input);
     case 9:
       return AoC_y2022_d09(unicode_input);
+    case 10:
+      return AoC_y2022_d10(unicode_input);
   }
   return PyErr_Format(PyExc_ValueError, "no solution implemented for day %d", day);
 }
