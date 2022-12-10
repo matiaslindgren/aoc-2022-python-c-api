@@ -28,7 +28,7 @@ Nothing intelligent to see here.
     ./solve 1
     ```
 
-## Explain
+## Explanation
 
 `py_aoc` is a program that runs the Python interpreter [entrypoint](./src/py_aoc.c#L105) by [linking](./Makefile#L21) to the [compiled](./Makefile#L48-L50) `libpython3` library:
 ```
