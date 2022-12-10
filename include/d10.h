@@ -40,18 +40,11 @@ PyObject *AoC_y2022_d10(PyObject *unicode_input) {
   }
 
   int pixel_is_lit[240] = {0};
-  PyObject *executing_ins = NULL;
-  for (size_t cycle = 1; executing_ins || PyList_Size(program) > 0; ++cycle) {
-    if (!executing_ins) {
-      executing_ins = PyList_GetItem(program, 0);
-      if (!executing_ins) {
-        goto error;
-      }
-      Py_INCREF(executing_ins);
-      if (PySequence_DelItem(program, 0) < 0) {
-        Py_DECREF(executing_ins);
-        goto error;
-      }
+  Py_ssize_t prog_pos = 0;
+  for (size_t cycle = 1; prog_pos < PyList_Size(program); ++cycle) {
+    PyObject *active_op = PyList_GetItem(program, prog_pos);
+    if (!active_op) {
+      goto error;
     }
     if (cycle % 40 == 20) {
       PyObject *cycle_py = PyLong_FromSize_t(cycle);
@@ -61,19 +54,18 @@ PyObject *AoC_y2022_d10(PyObject *unicode_input) {
       Py_DECREF(cycle_py);
     }
     pixel_is_lit[cycle - 1] = _AoC_y2022_d10_pixel_is_lit(cycle, PyLong_AsLong(reg_X));
-    PyObject *op_code = PyTuple_GET_ITEM(executing_ins, 0);
-    PyObject *op_value = PyTuple_GET_ITEM(executing_ins, 1);
-    PyObject *op_cycles = PyTuple_GET_ITEM(executing_ins, 2);
+    PyObject *op_code = PyTuple_GET_ITEM(active_op, 0);
+    PyObject *op_value = PyTuple_GET_ITEM(active_op, 1);
+    PyObject *op_cycles = PyTuple_GET_ITEM(active_op, 2);
     PyObject *const1 = PyLong_FromLong(1);
     Py_SETREF(op_cycles, PyNumber_Subtract(op_cycles, const1));
-    PyTuple_SetItem(executing_ins, 2, op_cycles);
+    PyTuple_SetItem(active_op, 2, op_cycles);
     PyObject *const0 = PyLong_FromLong(0);
     if (PyObject_RichCompareBool(op_cycles, const0, Py_EQ) == 1) {
       if (AoC_PyUnicode_Equals_ASCII(op_code, "addx")) {
         Py_SETREF(reg_X, PyNumber_Add(reg_X, op_value));
       }
-      Py_DECREF(executing_ins);
-      executing_ins = NULL;
+      ++prog_pos;
     }
     Py_DECREF(const1);
     Py_DECREF(const0);
