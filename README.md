@@ -30,7 +30,7 @@ Nothing intelligent to see here.
 
 ## Explain
 
-`py_aoc` is a program that runs the Python interpreter [entrypoint](./src/py_aoc.c#L105) by [linking](./Makefile#L21) to the [compiled](./Makefile#L48-L50) `libpython3` library (should appear under `./python/lib` after running `make python`):
+`py_aoc` is a program that runs the Python interpreter [entrypoint](./src/py_aoc.c#L105) by [linking](./Makefile#L21) to the [compiled](./Makefile#L48-L50) `libpython3` library:
 ```
 > ./out/py_aoc
 Python 3.11.0 (main, Dec  5 2022, 23:22:09) [GCC 10.2.1 20210110] on linux
