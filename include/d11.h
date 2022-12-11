@@ -89,7 +89,7 @@ PyObject *_AoC_y2022_d10_compute_binary_operation(PyObject *op, PyObject *old) {
   return res;
 }
 
-PyObject *_AoC_y2022_d10_parse_modtest(PyObject *section) {
+PyObject *_AoC_y2022_d10_parse_throwtest(PyObject *section) {
   PyObject *lines = PyUnicode_Splitlines(section, 0);
 
   PyObject *test_line = PyList_GetItem(lines, 3);
@@ -102,27 +102,27 @@ PyObject *_AoC_y2022_d10_parse_modtest(PyObject *section) {
   PyObject *on_false = AoC_unicode_split(PyList_GetItem(lines, 5), "throw to monkey ", 1);
   Py_SETREF(on_false, PyLong_FromUnicodeObject(PyList_GetItem(on_false, 1), 10));
 
-  PyObject *modtest = PyTuple_New(3);
-  PyTuple_SET_ITEM(modtest, 0, divisor);
-  PyTuple_SET_ITEM(modtest, 1, on_true);
-  PyTuple_SET_ITEM(modtest, 2, on_false);
+  PyObject *throwtest = PyTuple_New(3);
+  PyTuple_SET_ITEM(throwtest, 0, divisor);
+  PyTuple_SET_ITEM(throwtest, 1, on_true);
+  PyTuple_SET_ITEM(throwtest, 2, on_false);
 
   Py_DECREF(divisor_str);
   Py_DECREF(lines);
-  return modtest;
+  return throwtest;
 }
 
-Py_ssize_t _AoC_y2022_d10_apply_test(PyObject *modtest, PyObject *value) {
+Py_ssize_t _AoC_y2022_d10_compute_throwtest(PyObject *throwtest, PyObject *value) {
   PyObject *const0 = PyLong_FromLong(0);
-  PyObject *divisor = PyTuple_GET_ITEM(modtest, 0);
+  PyObject *divisor = PyTuple_GET_ITEM(throwtest, 0);
   PyObject *rem = PyNumber_Remainder(value, divisor);
   Py_ssize_t res = -1;
   switch (PyObject_RichCompareBool(rem, const0, Py_EQ)) {
     case 1: {
-      res = PyLong_AsSize_t(PyTuple_GET_ITEM(modtest, 1));
+      res = PyLong_AsSize_t(PyTuple_GET_ITEM(throwtest, 1));
     } break;
     case 0: {
-      res = PyLong_AsSize_t(PyTuple_GET_ITEM(modtest, 2));
+      res = PyLong_AsSize_t(PyTuple_GET_ITEM(throwtest, 2));
     } break;
   }
   Py_DECREF(rem);
@@ -146,24 +146,24 @@ PyObject *_AoC_y2022_d10_run_monkey_business(PyObject *sections, long worry_divi
   for (Py_ssize_t i_monkey = 0; i_monkey < num_monkeys; ++i_monkey) {
     PyObject *section = PyList_GetItem(sections, i_monkey);
     PyObject *state = PyDict_New();
-    PyObject *inspect_count = PyLong_FromLong(0);
-    PyObject *start_items = _AoC_y2022_d10_parse_starting_items(section);
-    PyObject *modtest = _AoC_y2022_d10_parse_modtest(section);
+    PyObject *items = _AoC_y2022_d10_parse_starting_items(section);
+    PyObject *throwtest = _AoC_y2022_d10_parse_throwtest(section);
     PyObject *binop = _AoC_y2022_d10_parse_binary_operation(section);
-    if (!state || !inspect_count || !start_items || !modtest || !binop) {
+    PyObject *inspected = PyLong_FromLong(0);
+    if (!state || !items || !throwtest || !binop || !inspected) {
+      Py_XDECREF(inspected);
       Py_XDECREF(binop);
-      Py_XDECREF(modtest);
-      Py_XDECREF(start_items);
-      Py_XDECREF(inspect_count);
+      Py_XDECREF(throwtest);
+      Py_XDECREF(items);
       Py_XDECREF(state);
       goto done;
     }
-    PyDict_SetItemString(state, "items", start_items);
-    PyDict_SetItemString(state, "inspect_count", PyLong_FromLong(0));
-    PyDict_SetItemString(state, "modtest", modtest);
+    PyDict_SetItemString(state, "items", items);
+    PyDict_SetItemString(state, "throwtest", throwtest);
     PyDict_SetItemString(state, "binop", binop);
+    PyDict_SetItemString(state, "inspected", inspected);
     PyList_SET_ITEM(monkey_state, i_monkey, state);
-    PyObject *test_divisor = PyTuple_GET_ITEM(modtest, 0);
+    PyObject *test_divisor = PyTuple_GET_ITEM(throwtest, 0);
     Py_SETREF(lcm_test_divisor, PyNumber_Multiply(lcm_test_divisor, test_divisor));
   }
 
@@ -171,8 +171,8 @@ PyObject *_AoC_y2022_d10_run_monkey_business(PyObject *sections, long worry_divi
     for (Py_ssize_t i_monkey = 0; i_monkey < num_monkeys; ++i_monkey) {
       PyObject *state = PyList_GetItem(monkey_state, i_monkey);
       PyObject *items = PyDict_GetItemString(state, "items");
+      PyObject *throwtest = PyDict_GetItemString(state, "throwtest");
       PyObject *binop = PyDict_GetItemString(state, "binop");
-      PyObject *modtest = PyDict_GetItemString(state, "modtest");
       Py_ssize_t num_items = PyList_Size(items);
       for (Py_ssize_t i_item = 0; i_item < num_items; ++i_item) {
         PyObject *item = PyList_GetItem(items, i_item);
@@ -180,7 +180,7 @@ PyObject *_AoC_y2022_d10_run_monkey_business(PyObject *sections, long worry_divi
         Py_SETREF(item, _AoC_y2022_d10_compute_binary_operation(binop, item));
         Py_SETREF(item, PyNumber_FloorDivide(item, worry_divisor));
         Py_SETREF(item, PyNumber_Remainder(item, lcm_test_divisor));
-        Py_ssize_t target_monkey = _AoC_y2022_d10_apply_test(modtest, item);
+        Py_ssize_t target_monkey = _AoC_y2022_d10_compute_throwtest(throwtest, item);
         if (target_monkey < 0) {
           goto done;
         }
@@ -190,10 +190,10 @@ PyObject *_AoC_y2022_d10_run_monkey_business(PyObject *sections, long worry_divi
           goto done;
         }
       }
-      PyObject *prev_inspect_count = PyDict_GetItemString(state, "inspect_count");
-      PyObject *inspect_count = PyLong_FromSsize_t(num_items);
-      Py_SETREF(inspect_count, PyNumber_Add(prev_inspect_count, inspect_count));
-      PyDict_SetItemString(state, "inspect_count", inspect_count);
+      PyObject *prev_inspected = PyDict_GetItemString(state, "inspected");
+      PyObject *inspected = PyLong_FromSsize_t(num_items);
+      Py_SETREF(inspected, PyNumber_Add(prev_inspected, inspected));
+      PyDict_SetItemString(state, "inspected", inspected);
       if (PyList_SetSlice(items, 0, num_items, NULL) < 0) {
         goto done;
       }
@@ -204,12 +204,12 @@ PyObject *_AoC_y2022_d10_run_monkey_business(PyObject *sections, long worry_divi
   PyObject *top2 = PyLong_FromLong(0);
   for (Py_ssize_t i_monkey = 0; i_monkey < num_monkeys; ++i_monkey) {
     PyObject *state = PyList_GetItem(monkey_state, i_monkey);
-    PyObject *inspect_count = PyDict_GetItemString(state, "inspect_count");
-    if (PyObject_RichCompareBool(inspect_count, top1, Py_GT) == 1) {
+    PyObject *inspected = PyDict_GetItemString(state, "inspected");
+    if (PyObject_RichCompareBool(inspected, top1, Py_GT) == 1) {
       Py_SETREF(top2, top1);
-      Py_SETREF(top1, inspect_count);
-    } else if (PyObject_RichCompareBool(inspect_count, top2, Py_GT) == 1) {
-      Py_SETREF(top2, inspect_count);
+      Py_SETREF(top1, inspected);
+    } else if (PyObject_RichCompareBool(inspected, top2, Py_GT) == 1) {
+      Py_SETREF(top2, inspected);
     }
   }
   monkey_business = PyNumber_Multiply(top1, top2);
