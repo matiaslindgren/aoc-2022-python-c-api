@@ -112,128 +112,112 @@ done:
   return res;
 }
 
+PyObject *_AoC_y2022_d10_run_monkey_business(PyObject *sections, long worry_divisor,
+                                             size_t num_rounds) {
+  PyObject *monkey_business = NULL;
+  PyObject *worry_divisor_py = PyLong_FromLong(worry_divisor);
+  PyObject *lcm_test_divisor = PyLong_FromLong(1);
+
+  Py_ssize_t num_monkeys = PyList_Size(sections);
+  PyObject *monkey_items = PyList_New(num_monkeys);
+  PyObject *monkey_inspections = PyList_New(num_monkeys);
+
+  if (!worry_divisor_py || !lcm_test_divisor || !monkey_items || !monkey_inspections) {
+    goto done;
+  }
+
+  for (Py_ssize_t i_monkey = 0; i_monkey < num_monkeys; ++i_monkey) {
+    PyObject *section = PyList_GetItem(sections, i_monkey);
+    PyObject *start_items = _AoC_y2022_d10_parse_starting_items(section);
+    PyList_SET_ITEM(monkey_items, i_monkey, start_items);
+    PyList_SET_ITEM(monkey_inspections, i_monkey, PyLong_FromLong(0));
+    PyObject *test_divisor = _AoC_y2022_d10_parse_test_divisor(section);
+    Py_SETREF(lcm_test_divisor, PyNumber_Multiply(lcm_test_divisor, test_divisor));
+    Py_DECREF(test_divisor);
+  }
+
+  for (size_t round = 0; round < num_rounds; ++round) {
+    for (Py_ssize_t i_monkey = 0; i_monkey < num_monkeys; ++i_monkey) {
+      PyObject *section = PyList_GetItem(sections, i_monkey);
+      PyObject *items_to_throw = PyList_GetItem(monkey_items, i_monkey);
+      Py_ssize_t num_items = PyList_Size(items_to_throw);
+      for (Py_ssize_t i_item = 0; i_item < num_items; ++i_item) {
+        PyObject *item = PyList_GetItem(items_to_throw, i_item);
+        Py_INCREF(item);
+        Py_SETREF(item, _AoC_y2022_d10_parse_and_apply_operation(section, item));
+        Py_SETREF(item, PyNumber_FloorDivide(item, worry_divisor_py));
+        Py_SETREF(item, PyNumber_Remainder(item, lcm_test_divisor));
+        Py_ssize_t target_monkey = _AoC_y2022_d10_parse_and_apply_test(section, item);
+        if (target_monkey < 0) {
+          goto done;
+        }
+        PyObject *target_list = PyList_GetItem(monkey_items, target_monkey);
+        if (PyList_Append(target_list, item) < 0) {
+          goto done;
+        }
+      }
+      PyObject *prev_inspect_count = PyList_GetItem(monkey_inspections, i_monkey);
+      PyObject *inspect_count = PyLong_FromSsize_t(num_items);
+      Py_SETREF(inspect_count, PyNumber_Add(prev_inspect_count, inspect_count));
+      if (PyList_SetItem(monkey_inspections, i_monkey, inspect_count) < 0) {
+        goto done;
+      }
+      if (PyList_SetSlice(items_to_throw, 0, num_items, NULL) < 0) {
+        goto done;
+      }
+    }
+  }
+
+  if (PyList_Sort(monkey_inspections) < 0) {
+    goto done;
+  }
+  if (PyList_Reverse(monkey_inspections) < 0) {
+    goto done;
+  }
+
+  PyObject *top1 = PyList_GetItem(monkey_inspections, 0);
+  PyObject *top2 = PyList_GetItem(monkey_inspections, 1);
+  monkey_business = PyNumber_Multiply(top1, top2);
+
+done:
+  Py_XDECREF(monkey_inspections);
+  Py_XDECREF(monkey_items);
+  Py_XDECREF(lcm_test_divisor);
+  Py_XDECREF(worry_divisor_py);
+  return monkey_business;
+}
+
 PyObject *AoC_y2022_d11(PyObject *unicode_input) {
-  PyObject *const1 = PyLong_FromLong(1);
-  PyObject *const3 = PyLong_FromLong(3);
-  PyObject *monkey_items = NULL;
-  PyObject *monkey_inspections = NULL;
-  PyObject *solution = NULL;
   PyObject *part1 = NULL;
   PyObject *part2 = NULL;
+  PyObject *solution = NULL;
   PyObject *sections = AoC_unicode_split(unicode_input, "\n\n", -1);
   if (!sections) {
     PyErr_Format(PyExc_RuntimeError, "could not split input into sections");
     goto done;
   }
-
-  Py_ssize_t num_monkeys = PyList_Size(sections);
-
   {
-    monkey_items = PyList_New(num_monkeys);
-    monkey_inspections = PyList_New(num_monkeys);
-
-    for (Py_ssize_t i_monkey = 0; i_monkey < num_monkeys; ++i_monkey) {
-      PyObject *section = PyList_GetItem(sections, i_monkey);
-      PyObject *start_items = _AoC_y2022_d10_parse_starting_items(section);
-      PyList_SET_ITEM(monkey_items, i_monkey, start_items);
-      PyList_SET_ITEM(monkey_inspections, i_monkey, PyLong_FromLong(0));
+    long worry_divisor = 3;
+    size_t num_rounds = 20;
+    part1 = _AoC_y2022_d10_run_monkey_business(sections, worry_divisor, num_rounds);
+    if (!part1) {
+      goto done;
     }
-
-    for (size_t round = 0; round < 20; ++round) {
-      for (Py_ssize_t i_monkey = 0; i_monkey < num_monkeys; ++i_monkey) {
-        PyObject *section = PyList_GetItem(sections, i_monkey);
-        PyObject *items_to_throw = PyList_GetItem(monkey_items, i_monkey);
-        Py_ssize_t num_items = PyList_Size(items_to_throw);
-        for (Py_ssize_t i_item = 0; i_item < num_items; ++i_item) {
-          PyObject *item = PyList_GetItem(items_to_throw, i_item);
-          Py_INCREF(item);
-          Py_SETREF(item, _AoC_y2022_d10_parse_and_apply_operation(section, item));
-          Py_SETREF(item, PyNumber_FloorDivide(item, const3));
-          Py_ssize_t target_monkey = _AoC_y2022_d10_parse_and_apply_test(section, item);
-          if (target_monkey < 0) {
-            goto done;
-          }
-          PyObject *target_list = PyList_GetItem(monkey_items, target_monkey);
-          if (PyList_Append(target_list, item) < 0) {
-            goto done;
-          }
-        }
-        PyObject *prev_inspect_count = PyList_GetItem(monkey_inspections, i_monkey);
-        PyObject *inspect_count = PyLong_FromSsize_t(num_items);
-        Py_SETREF(inspect_count, PyNumber_Add(prev_inspect_count, inspect_count));
-        PyList_SetItem(monkey_inspections, i_monkey, inspect_count);
-        PySequence_DelSlice(items_to_throw, 0, num_items);
-      }
-    }
-
-    PyList_Sort(monkey_inspections);
-    PyList_Reverse(monkey_inspections);
-
-    PyObject *top1 = PyList_GetItem(monkey_inspections, 0);
-    PyObject *top2 = PyList_GetItem(monkey_inspections, 1);
-    part1 = PyNumber_Multiply(top1, top2);
   }
-
   {
-    Py_SETREF(monkey_items, PyList_New(num_monkeys));
-    Py_SETREF(monkey_inspections, PyList_New(num_monkeys));
-    PyObject *lcm_test_divisor = PyLong_FromLong(1);
-
-    for (Py_ssize_t i_monkey = 0; i_monkey < num_monkeys; ++i_monkey) {
-      PyObject *section = PyList_GetItem(sections, i_monkey);
-      PyObject *start_items = _AoC_y2022_d10_parse_starting_items(section);
-      PyList_SET_ITEM(monkey_items, i_monkey, start_items);
-      PyList_SET_ITEM(monkey_inspections, i_monkey, PyLong_FromLong(0));
-      PyObject *test_divisor = _AoC_y2022_d10_parse_test_divisor(section);
-      Py_SETREF(lcm_test_divisor, PyNumber_Multiply(lcm_test_divisor, test_divisor));
+    long worry_divisor = 1;
+    size_t num_rounds = 10000;
+    part2 = _AoC_y2022_d10_run_monkey_business(sections, worry_divisor, num_rounds);
+    if (!part2) {
+      goto done;
     }
-
-    for (size_t round = 0; round < 10000; ++round) {
-      for (Py_ssize_t i_monkey = 0; i_monkey < num_monkeys; ++i_monkey) {
-        PyObject *section = PyList_GetItem(sections, i_monkey);
-        PyObject *items_to_throw = PyList_GetItem(monkey_items, i_monkey);
-        Py_ssize_t num_items = PyList_Size(items_to_throw);
-        for (Py_ssize_t i_item = 0; i_item < num_items; ++i_item) {
-          PyObject *item = PyList_GetItem(items_to_throw, i_item);
-          Py_INCREF(item);
-          Py_SETREF(item, _AoC_y2022_d10_parse_and_apply_operation(section, item));
-          Py_SETREF(item, PyNumber_Remainder(item, lcm_test_divisor));
-          Py_ssize_t target_monkey = _AoC_y2022_d10_parse_and_apply_test(section, item);
-          if (target_monkey < 0) {
-            goto done;
-          }
-          PyObject *target_list = PyList_GetItem(monkey_items, target_monkey);
-          if (PyList_Append(target_list, item) < 0) {
-            goto done;
-          }
-        }
-        PyObject *prev_inspect_count = PyList_GetItem(monkey_inspections, i_monkey);
-        PyObject *inspect_count = PyLong_FromSsize_t(num_items);
-        Py_SETREF(inspect_count, PyNumber_Add(prev_inspect_count, inspect_count));
-        PyList_SetItem(monkey_inspections, i_monkey, inspect_count);
-        PySequence_DelSlice(items_to_throw, 0, num_items);
-      }
-    }
-    Py_DECREF(lcm_test_divisor);
-
-    PyList_Sort(monkey_inspections);
-    PyList_Reverse(monkey_inspections);
-
-    PyObject *top1 = PyList_GetItem(monkey_inspections, 0);
-    PyObject *top2 = PyList_GetItem(monkey_inspections, 1);
-    part2 = PyNumber_Multiply(top1, top2);
   }
-
   solution = PyUnicode_FromFormat("%S %S", part1, part2);
 
 done:
   Py_XDECREF(part1);
   Py_XDECREF(part2);
-  Py_XDECREF(monkey_items);
-  Py_XDECREF(monkey_inspections);
   Py_XDECREF(sections);
-  Py_XDECREF(const3);
-  Py_XDECREF(const1);
   return solution;
 }
 
