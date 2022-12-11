@@ -95,7 +95,11 @@ static PyMethodDef AoC_solve_methods[] = {
 
 // Definition of module 'aoc_solve'
 static struct PyModuleDef AoC_solve_module = {
-    PyModuleDef_HEAD_INIT, "aoc_solve", "Advent of Code solvers", -1, AoC_solve_methods,
+    PyModuleDef_HEAD_INIT,
+    "aoc_solve",
+    "Advent of Code solvers",
+    -1,
+    AoC_solve_methods,
 };
 
 PyMODINIT_FUNC PyInit_AoC_solve(void) { return PyModule_Create(&AoC_solve_module); }

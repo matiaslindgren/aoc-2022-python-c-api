@@ -72,8 +72,11 @@ PyObject *AoC_slurp_file(PyObject *filename) {
   fclose(fp);
   // NOTE: wrong if file_size is larger than SIZE_MAX / 2
   if (num_read < (size_t)file_size) {
-    PyErr_Format(PyExc_OSError, "tried reading %ld bytes from '%S' but read only %lu\n", file_size,
-                 filename, num_read);
+    PyErr_Format(PyExc_OSError,
+                 "tried reading %ld bytes from '%S' but read only %lu\n",
+                 file_size,
+                 filename,
+                 num_read);
     Py_DECREF(py_buf);
     goto error;
   }
@@ -117,7 +120,9 @@ PyObject *AoC_unicode_split(PyObject *s, const char *sep, Py_ssize_t maxsplit) {
   PyObject *parts = PyUnicode_Split(s, unicode_sep, maxsplit);
   Py_DECREF(unicode_sep);
   if (!parts) {
-    PyErr_Format(PyExc_RuntimeError, "failed splitting input %zd times at '%S'", maxsplit,
+    PyErr_Format(PyExc_RuntimeError,
+                 "failed splitting input %zd times at '%S'",
+                 maxsplit,
                  unicode_sep);
     return NULL;
   }
