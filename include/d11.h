@@ -130,7 +130,8 @@ Py_ssize_t _AoC_y2022_d10_compute_throwtest(PyObject *throwtest, PyObject *value
   return res;
 }
 
-PyObject *_AoC_y2022_d10_run_monkey_business(PyObject *sections, long worry_divisor_,
+PyObject *_AoC_y2022_d10_run_monkey_business(PyObject *sections,
+                                             long worry_divisor_,
                                              size_t num_rounds) {
   PyObject *monkey_business = NULL;
   PyObject *worry_divisor = PyLong_FromLong(worry_divisor_);

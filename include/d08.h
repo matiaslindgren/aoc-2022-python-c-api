@@ -2,8 +2,11 @@
 #define _AOC_Y2022_D08_H_INCLUDED
 #include "common.h"
 
-int _AoC_y2022_d08_is_visible(PyObject *heightmap, Py_ssize_t grid_h, Py_ssize_t grid_w,
-                              Py_ssize_t y0, Py_ssize_t x0) {
+int _AoC_y2022_d08_is_visible(PyObject *heightmap,
+                              Py_ssize_t grid_h,
+                              Py_ssize_t grid_w,
+                              Py_ssize_t y0,
+                              Py_ssize_t x0) {
   PyObject *height0 = PyList_GetItem(heightmap, y0 * (grid_w + 2) + x0);
 
   int ok_from_north = 1;
@@ -54,8 +57,11 @@ int _AoC_y2022_d08_is_visible(PyObject *heightmap, Py_ssize_t grid_h, Py_ssize_t
   return ok_from_west;
 }
 
-int _AoC_y2022_d08_scenic_score(PyObject *heightmap, Py_ssize_t grid_h, Py_ssize_t grid_w,
-                                Py_ssize_t y0, Py_ssize_t x0) {
+int _AoC_y2022_d08_scenic_score(PyObject *heightmap,
+                                Py_ssize_t grid_h,
+                                Py_ssize_t grid_w,
+                                Py_ssize_t y0,
+                                Py_ssize_t x0) {
   PyObject *height0 = PyList_GetItem(heightmap, y0 * (grid_w + 2) + x0);
 
   int score_north = 0;
