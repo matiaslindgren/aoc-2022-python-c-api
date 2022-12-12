@@ -38,17 +38,22 @@ static PyObject *_AoC_solve_y2022(int day, PyObject *unicode_input) {
     case 11:
       return AoC_y2022_d11(unicode_input);
   }
-  return PyErr_Format(PyExc_ValueError, "no solution implemented for day %d", day);
+  return PyErr_Format(PyExc_ValueError,
+                      "no solution implemented for day %d",
+                      day);
 }
 
 static PyObject *AoC_solve_y2022(PyObject *module, PyObject *args) {
   int day;
   if (!PyArg_ParseTuple(args, "i", &day)) {
-    PyErr_SetString(PyExc_RuntimeError, "failed parsing positional arg 'day' as int");
+    PyErr_SetString(PyExc_RuntimeError,
+                    "failed parsing positional arg 'day' as int");
     goto error;
   }
   if (!(1 <= day && day <= 25)) {
-    PyErr_Format(PyExc_ValueError, "positional arg 'day' must be in range [1, 25], not %d", day);
+    PyErr_Format(PyExc_ValueError,
+                 "positional arg 'day' must be in range [1, 25], not %d",
+                 day);
     goto error;
   }
 
@@ -71,7 +76,9 @@ static PyObject *AoC_solve_y2022(PyObject *module, PyObject *args) {
 
 error:
   if (!PyErr_Occurred()) {
-    PyErr_Format(PyExc_RuntimeError, "unknown failure when solving day %d", day);
+    PyErr_Format(PyExc_RuntimeError,
+                 "unknown failure when solving day %d",
+                 day);
   }
   return NULL;
 }
@@ -102,13 +109,17 @@ static struct PyModuleDef AoC_solve_module = {
     AoC_solve_methods,
 };
 
-PyMODINIT_FUNC PyInit_AoC_solve(void) { return PyModule_Create(&AoC_solve_module); }
+PyMODINIT_FUNC PyInit_AoC_solve(void) {
+  return PyModule_Create(&AoC_solve_module);
+}
 
 int main(int argc, char *const *argv) {
   // Make 'aoc_solve' available as a builtin module
   if (PyImport_AppendInittab(AoC_solve_module.m_name, PyInit_AoC_solve) == -1) {
     PyErr_Print();
-    fprintf(stderr, "Failed to extend builtin modules table with '%s'\n", AoC_solve_module.m_name);
+    fprintf(stderr,
+            "Failed to extend builtin modules table with '%s'\n",
+            AoC_solve_module.m_name);
     exit(1);
   }
   PyStatus status = _AoC_init_python(argc, argv);
