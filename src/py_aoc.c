@@ -13,6 +13,7 @@
 #include "d10.h"
 #include "d11.h"
 #include "d12.h"
+#include "d13.h"  // NOTE: defines a custom PyTypeObject
 
 static PyObject *_AoC_solve_y2022(int day, PyObject *unicode_input) {
   switch (day) {
@@ -40,6 +41,8 @@ static PyObject *_AoC_solve_y2022(int day, PyObject *unicode_input) {
       return AoC_y2022_d11(unicode_input);
     case 12:
       return AoC_y2022_d12(unicode_input);
+    case 13:
+      return AoC_y2022_d13(unicode_input);
   }
   return PyErr_Format(PyExc_ValueError,
                       "no solution implemented for day %d",
@@ -83,7 +86,7 @@ error:
                  "unknown failure when solving day %d",
                  day);
   }
-  return NULL;
+  return 0;
 }
 
 // Methods available in module 'aoc_solve'
@@ -94,12 +97,12 @@ static PyMethodDef AoC_solve_methods[] = {
         METH_VARARGS,
         "Advent of Code 2022 solver",
     },
-    // End of array sentinel
+    // Custom modules end
     {
-        NULL,
-        NULL,
         0,
-        NULL,
+        0,
+        0,
+        0,
     },
 };
 
@@ -113,7 +116,26 @@ static struct PyModuleDef AoC_solve_module = {
 };
 
 PyMODINIT_FUNC PyInit_AoC_solve(void) {
-  return PyModule_Create(&AoC_solve_module);
+  PyObject *module = 0;
+  if (PyType_Ready(&AoC_y2022_d13_PacketType) < 0) {
+    return 0;
+  }
+
+  module = PyModule_Create(&AoC_solve_module);
+  if (!module) {
+    return 0;
+  }
+
+  Py_INCREF(&AoC_y2022_d13_PacketType);
+  if (PyModule_AddObject(module,
+                         AoC_y2022_d13_PacketType.tp_name,
+                         (PyObject *)&AoC_y2022_d13_PacketType) < 0) {
+    Py_DECREF(&AoC_y2022_d13_PacketType);
+    Py_DECREF(module);
+    return 0;
+  }
+
+  return module;
 }
 
 int main(int argc, char *const *argv) {
