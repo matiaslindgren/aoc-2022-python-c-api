@@ -6,7 +6,7 @@ CFLAGS := \
 	-O3 \
 	-Wall \
 	-Werror \
-	-fsanitize=address,undefined
+	-fsanitize=undefined
 
 .PHONY: py_aoc
 py_aoc: $(OUT)/py_aoc
