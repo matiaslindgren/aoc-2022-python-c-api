@@ -23,7 +23,7 @@
       "  }",
       "  PyObject *part1_py = PyLong_FromLong(part1);",
       "  PyObject *part2_py = PyLong_FromLong(part2);",
-      "  PyObject *solution = PyUnicode_FromFormat(\"%S %S\", part1_py, part2_py);",
+      "  solution = PyUnicode_FromFormat(\"%S %S\", part1_py, part2_py);",
       "  Py_DECREF(part1_py);",
       "  Py_DECREF(part2_py);",
       "",
