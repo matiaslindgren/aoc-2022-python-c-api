@@ -13,22 +13,6 @@ static void AoC_y2022_d13_Packet_dealloc(AoC_y2022_d13_PacketObject *self) {
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-static int AoC_y2022_d13_Packet_init(AoC_y2022_d13_PacketObject *self,
-                                     PyObject *args,
-                                     PyObject *kwds) {
-  PyObject *packet = 0;
-  if (!PyArg_ParseTuple(args, "U", &packet)) {
-    return -1;
-  }
-  if (packet) {
-    PyObject *tmp = self->packet;
-    Py_INCREF(packet);
-    self->packet = packet;
-    Py_DECREF(tmp);
-  }
-  return 0;
-}
-
 int _AoC_y2022_d13_packet_compare(PyObject *lhs, PyObject *rhs);
 
 PyObject *AoC_y2022_d13_Packet_compare(PyObject *lhs, PyObject *rhs, int op) {
@@ -42,14 +26,7 @@ PyObject *AoC_y2022_d13_Packet_compare(PyObject *lhs, PyObject *rhs, int op) {
       Py_RETURN_FALSE;
     } break;
     case Py_EQ: {
-      int lhs_lt_rhs =
-          _AoC_y2022_d13_packet_compare(lhs_packet, rhs_packet) < 0;
-      int rhs_lt_lhs =
-          _AoC_y2022_d13_packet_compare(rhs_packet, lhs_packet) < 0;
-      if (!lhs_lt_rhs && !rhs_lt_lhs) {
-        Py_RETURN_TRUE;
-      }
-      Py_RETURN_FALSE;
+      return PyUnicode_RichCompare(lhs_packet, rhs_packet, Py_EQ);
     } break;
   }
   Py_RETURN_NOTIMPLEMENTED;
@@ -59,15 +36,13 @@ static PyTypeObject AoC_y2022_d13_PacketType = {
     PyVarObject_HEAD_INIT(0, 0).tp_name = "y2022_d13_Packet",
     .tp_basicsize = sizeof(AoC_y2022_d13_PacketObject),
     .tp_new = PyType_GenericNew,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_init = (initproc)(AoC_y2022_d13_Packet_init),
     .tp_dealloc = (destructor)(AoC_y2022_d13_Packet_dealloc),
     .tp_richcompare = (richcmpfunc)(AoC_y2022_d13_Packet_compare),
 };
 
 static PyObject *AoC_y2022_d13_Packet_FromUnicodeObject(PyObject *packet_str) {
   PyObject *packet = PyType_GenericNew(&AoC_y2022_d13_PacketType, 0, 0);
-  ((AoC_y2022_d13_PacketObject *)packet)->packet = packet_str;
+  ((AoC_y2022_d13_PacketObject *)packet)->packet = Py_NewRef(packet_str);
   return packet;
 }
 
