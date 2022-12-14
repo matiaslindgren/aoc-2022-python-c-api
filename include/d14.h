@@ -95,6 +95,7 @@ PyObject *AoC_y2022_d14(PyObject *unicode_input) {
     ++part2;
     Py_SETREF(sand, _AoC_y2022_d14_make_point(500, 0));
   }
+  Py_DECREF(sand);
 
   PyObject *part1_py = PyLong_FromLong(part1);
   PyObject *part2_py = PyLong_FromLong(part2);
