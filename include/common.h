@@ -12,8 +12,19 @@ PyStatus _AoC_init_python(int argc, char *const *argv) {
   PyConfig config;
   PyConfig_InitPythonConfig(&config);
 
-  config.optimization_level = 2;
-  config.bytes_warning = 2;
+  int debug = 1;
+  if (debug) {
+    config.optimization_level = 0;
+    config.bytes_warning = 2;
+    config.tracemalloc = 1;
+    config.malloc_stats = 1;
+    config.verbose = 1;
+    config.show_ref_count = 1;
+    config.dump_refs = 1;
+  } else {
+    config.optimization_level = 2;
+    config.bytes_warning = 2;
+  }
 
   PyStatus status = PyConfig_SetBytesArgv(&config, argc, argv);
   if (PyStatus_Exception(status)) {

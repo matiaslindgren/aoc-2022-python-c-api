@@ -8,7 +8,6 @@ Nothing intelligent to see here.
 ## Requirements
 
 - clang
-- gcc
 - make
 - curl
 - tar
