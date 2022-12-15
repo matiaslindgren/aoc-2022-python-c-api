@@ -160,8 +160,6 @@ PyStatus _AoC_init_python(const int argc, char *const *argv, const int debug) {
   } else {
     config.optimization_level = 2;
     config.bytes_warning = 2;
-    config.show_ref_count = 1;
-    config.dump_refs = 1;
   }
 
   PyStatus status = PyConfig_SetBytesArgv(&config, argc, argv);
