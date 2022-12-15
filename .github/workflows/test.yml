@@ -8,12 +8,16 @@ on:
       - src/*.c
       - Makefile
       - txt
+      - .github/workflows/test.yml
 
 jobs:
   build_and_test:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
+
+    - name: install llvm
+      run: sudo apt install llvm
 
     - name: cache compiled aoc-python interpreter
       id: cache-aoc-python
