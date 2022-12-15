@@ -14,7 +14,6 @@ PyObject *AoC_y2022_d01(PyObject *unicode_input) {
     Py_DECREF(lines);
     return NULL;
   }
-  Py_DECREF(tail);
 
   PyObject *solution = NULL;
   PyObject *top3 = PyList_New(0);
@@ -27,8 +26,7 @@ PyObject *AoC_y2022_d01(PyObject *unicode_input) {
       if (PyList_Append(top3, current_sum) < 0) {
         goto done;
       }
-      Py_DECREF(current_sum);
-      current_sum = PyLong_FromLong(0L);
+      Py_SETREF(current_sum, PyLong_FromLong(0));
       if (PyList_Sort(top3) == -1) {
         goto done;
       }
@@ -51,7 +49,6 @@ PyObject *AoC_y2022_d01(PyObject *unicode_input) {
     Py_SETREF(part2, tmp);
   }
   solution = PyUnicode_FromFormat("%S %S", part1, part2);
-  Py_DECREF(part1);
   Py_DECREF(part2);
 
 done:

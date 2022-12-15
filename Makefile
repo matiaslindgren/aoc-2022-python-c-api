@@ -7,31 +7,23 @@ CFLAGS := \
 	-O3 \
 	-Wall \
 	-Werror \
-	-fsanitize=address,undefined
+	-fsanitize=undefined
 
-.PHONY: py_aoc
-py_aoc: $(OUT)/py_aoc
+SOLUTIONS := $(basename $(notdir $(wildcard include/d??.h)))
 
-$(OUT)/py_aoc: $(OUT)/%: src/%.c include/common.h $(wildcard include/d??.h) $(OUT)
-	$(CXX) \
+BINARIES  := py_aoc py_aoc_debug
+
+.PHONY: $(BINARIES)
+$(BINARIES): %: $(OUT)/%
+
+$(addprefix $(OUT)/,$(BINARIES)): $(OUT)/%: src/%.c $(wildcard include/*.h) $(OUT)
+	$(CC) \
 		$(CFLAGS) \
-		$(shell ./python/bin/python3-config --cflags --embed) \
+		$(shell ./$(subst py_aoc,python,$(notdir $@))/bin/python3-config --cflags --embed) \
 		-I./include \
 		$< \
 		-o $@ \
-		$(shell ./python/bin/python3-config --ldflags --embed)
-
-.PHONY: py_aoc_debug
-py_aoc_debug: $(OUT)/py_aoc_debug
-
-$(OUT)/py_aoc_debug: src/py_aoc.c include/common.h $(wildcard include/d??.h) $(OUT)
-	$(CXX) \
-		$(CFLAGS) \
-		$(shell ./python_debug/bin/python3-config --cflags --embed) \
-		-I./include \
-		$< \
-		-o $@ \
-		$(shell ./python_debug/bin/python3-config --ldflags --embed)
+		$(shell ./$(subst py_aoc,python,$(notdir $@))/bin/python3-config --ldflags --embed)
 
 $(OUT):
 	mkdir -p $@
@@ -71,3 +63,13 @@ python_debug: py_src_debug
 		--with-trace-refs \
 		--with-assertions
 	cd $< && make -j && make -j testall && make install
+
+RUN_SOLUTIONS   := $(addprefix run_,$(SOLUTIONS))
+.PHONY: $(RUN_SOLUTIONS)
+$(RUN_SOLUTIONS): $(OUT)/py_aoc
+	$< -c "from aoc_solve import y2022; print(y2022(int('$(patsubst run_d%,%,$@)')))"
+
+DEBUG_SOLUTIONS := $(addprefix debug_,$(SOLUTIONS))
+.PHONY: $(DEBUG_SOLUTIONS)
+$(DEBUG_SOLUTIONS): $(OUT)/py_aoc_debug
+	$< -c "from aoc_solve import y2022; print(y2022(int('$(patsubst debug_d%,%,$@)')))"

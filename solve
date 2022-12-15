@@ -5,5 +5,3 @@ if [ $# -ne 1 ]; then
 	echo "usage: $0 day"
 	exit 2
 fi
-
-./out/py_aoc -c "from aoc_solve import y2022; print(y2022($1))"
