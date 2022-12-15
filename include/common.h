@@ -5,50 +5,14 @@
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 
-/*
- * https://docs.python.org/3/c-api/init_config.html#initialization-with-pyconfig
- */
-PyStatus _AoC_init_python(int argc, char *const *argv) {
-  PyConfig config;
-  PyConfig_InitPythonConfig(&config);
-
-  int debug = 1;
-  if (debug) {
-    config.optimization_level = 0;
-    config.bytes_warning = 2;
-    config.tracemalloc = 1;
-    config.malloc_stats = 1;
-    config.verbose = 1;
-    config.show_ref_count = 1;
-    config.dump_refs = 1;
-  } else {
-    config.optimization_level = 2;
-    config.bytes_warning = 2;
-  }
-
-  PyStatus status = PyConfig_SetBytesArgv(&config, argc, argv);
-  if (PyStatus_Exception(status)) {
-    goto done;
-  }
-
-  status = PyConfig_Read(&config);
-  if (PyStatus_Exception(status)) {
-    goto done;
-  }
-
-  status = Py_InitializeFromConfig(&config);
-
-done:
-  PyConfig_Clear(&config);
-  return status;
-}
-
 PyObject *AoC_slurp_file(PyObject *filename) {
   Py_INCREF(filename);
   const char *raw_filename = PyUnicode_AsUTF8(filename);
   if (!raw_filename || PyErr_Occurred()) {
     if (!PyErr_Occurred()) {
-      PyErr_Format(PyExc_RuntimeError, "failed encoding filename '%S' as UTF-8\n", filename);
+      PyErr_Format(PyExc_RuntimeError,
+                   "failed encoding filename '%S' as UTF-8\n",
+                   filename);
     }
     Py_DECREF(filename);
     return NULL;
@@ -56,17 +20,21 @@ PyObject *AoC_slurp_file(PyObject *filename) {
 
   FILE *fp = fopen(raw_filename, "r");
   if (!fp) {
-    PyErr_Format(PyExc_OSError, "failed opening file '%S' for reading\n", filename);
+    PyErr_Format(PyExc_OSError,
+                 "failed opening file '%S' for reading\n",
+                 filename);
     goto error;
   }
 
   if (fseek(fp, 0, SEEK_END)) {
-    PyErr_Format(PyExc_OSError, "failed seeking to the end of '%S'\n", filename);
+    PyErr_Format(PyExc_OSError,
+                 "failed seeking to the end of '%S'\n",
+                 filename);
     goto error;
   }
 
   const long file_size = ftell(fp);
-  if (file_size == -1) {
+  if (file_size < 0) {
     PyErr_Format(PyExc_OSError, "could not get file size of '%S'\n", filename);
     goto error;
   }
@@ -81,7 +49,6 @@ PyObject *AoC_slurp_file(PyObject *filename) {
   rewind(fp);
   size_t num_read = fread(buf, 1, file_size, fp);
   fclose(fp);
-  // NOTE: wrong if file_size is larger than SIZE_MAX / 2
   if (num_read < (size_t)file_size) {
     PyErr_Format(PyExc_OSError,
                  "tried reading %ld bytes from '%S' but read only %lu\n",
@@ -147,11 +114,16 @@ int AoC_PyUnicode_Equals_ASCII(PyObject *unicode, const char *str) {
 PyObject *AoC_PyLong_Add(PyObject *lhs_py, long rhs) {
   PyObject *rhs_py = PyLong_FromLong(rhs);
   if (!rhs_py) {
-    return PyErr_Format(PyExc_RuntimeError, "failed creating PyLong object from %ld", rhs);
+    return PyErr_Format(PyExc_RuntimeError,
+                        "failed creating PyLong object from %ld",
+                        rhs);
   }
   PyObject *res = PyNumber_Add(lhs_py, rhs_py);
   if (!res) {
-    PyErr_Format(PyExc_RuntimeError, "failed computing %S + %S", lhs_py, rhs_py);
+    PyErr_Format(PyExc_RuntimeError,
+                 "failed computing %S + %S",
+                 lhs_py,
+                 rhs_py);
     Py_DECREF(rhs_py);
     return NULL;
   }

@@ -10,7 +10,7 @@ for day in $(seq 1 25); do
 	fi
 	printf 'day %.2d: ' $day
 	expect="$(cat "$f_correct")"
-	output="$(./solve $day)"
+	output="$(make run_d$(printf '%.2d' $day) | tail -n +2)"
 	if [ "$output" != "$expect" ]; then
 		printf "fail\n"
 		ok=
