@@ -1,6 +1,7 @@
 SHELL  := /bin/sh
 OUT    := out
-CXX    := clang
+CC     := clang
+CXX    := clang++
 CFLAGS := \
 	-std=c17 \
 	-O3 \
@@ -58,15 +59,15 @@ py_src py_src_debug: Python.tgz
 	tar --directory $@ -zx --strip-components 1 -f $<
 
 python: py_src
-	cd $< && CXX=$(CXX) ./configure \
+	cd $< && CC=$(CC) CXX=$(CXX) ./configure \
 		--prefix $(abspath ./$@) \
 		--enable-optimizations
-	cd $< && make -j && make -j test && make install
+	cd $< && make -j && make -j testall && make install
 
 python_debug: py_src_debug
-	cd $< && CXX=$(CXX) ./configure \
+	cd $< && CC=$(CC) CXX=$(CXX) ./configure \
 		--prefix $(abspath ./$@) \
 		--with-pydebug \
 		--with-trace-refs \
 		--with-assertions
-	cd $< && make -j && make install
+	cd $< && make -j && make -j testall && make install
