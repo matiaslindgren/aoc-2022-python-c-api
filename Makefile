@@ -64,10 +64,10 @@ python_debug: py_src_debug
 		--with-assertions
 	cd $< && make -j && make -j testall && make install
 
-RUN_SOLUTIONS   := $(addprefix run_,$(SOLUTIONS))
+RUN_SOLUTIONS := $(addprefix run_,$(SOLUTIONS))
 .PHONY: $(RUN_SOLUTIONS)
 $(RUN_SOLUTIONS): $(OUT)/py_aoc
-	$< -c "from aoc_solve import y2022; print(y2022(int('$(patsubst run_d%,%,$@)')))"
+	@$< -c "from aoc_solve import y2022; print(y2022(int('$(patsubst run_d%,%,$@)')))"
 
 DEBUG_SOLUTIONS := $(addprefix debug_,$(SOLUTIONS))
 .PHONY: $(DEBUG_SOLUTIONS)
