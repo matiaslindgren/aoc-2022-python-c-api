@@ -16,7 +16,7 @@ PyObject *_AoC_y2022_d18_copy_point(PyObject *p1) {
 PyObject *_AoC_y2022_d18_make_adjacent_points(PyObject *point) {
   PyObject *adjacent = PyList_New(0);
   for (Py_ssize_t step = -1; step <= 1; step += 2) {
-    for (Py_ssize_t dim = 0; dim < 3; ++dim) {
+    for (Py_ssize_t dim = 0; dim < PyTuple_Size(point); ++dim) {
       PyObject *adj = _AoC_y2022_d18_copy_point(point);
       long value = PyLong_AsLong(PyTuple_GetItem(point, dim));
       PyTuple_SetItem(adj, dim, PyLong_FromLong(value + step));
@@ -26,16 +26,16 @@ PyObject *_AoC_y2022_d18_make_adjacent_points(PyObject *point) {
   return adjacent;
 }
 
-Py_ssize_t _AoC_y2022_d18_count_surface_3d_flood_fill(PyObject *point,
-                                                      PyObject *points,
-                                                      PyObject *visited,
-                                                      PyObject *lo_bound,
-                                                      PyObject *hi_bound) {
+Py_ssize_t _AoC_y2022_d18_count_3d_surface(PyObject *point,
+                                           PyObject *points,
+                                           PyObject *visited,
+                                           PyObject *lo_bound,
+                                           PyObject *hi_bound) {
   if (PySet_Contains(visited, point)) {
     return 0;
   }
   PySet_Add(visited, point);
-  for (Py_ssize_t i = 0; i < 3; ++i) {
+  for (Py_ssize_t i = 0; i < PyTuple_Size(point); ++i) {
     PyObject *comp = PyTuple_GetItem(point, i);
     PyObject *lo = PyTuple_GetItem(lo_bound, i);
     PyObject *hi = PyTuple_GetItem(hi_bound, i);
@@ -53,64 +53,36 @@ Py_ssize_t _AoC_y2022_d18_count_surface_3d_flood_fill(PyObject *point,
     if (PySet_Contains(points, adj_point) == 1) {
       ++area;
     } else {
-      area += _AoC_y2022_d18_count_surface_3d_flood_fill(adj_point,
-                                                         points,
-                                                         visited,
-                                                         lo_bound,
-                                                         hi_bound);
+      area += _AoC_y2022_d18_count_3d_surface(adj_point,
+                                              points,
+                                              visited,
+                                              lo_bound,
+                                              hi_bound);
     }
   }
   Py_DECREF(adjacent);
   return area;
 }
 
-PyObject *_AoC_y2022_d18_make_point(const long points[static 3]) {
-  return PyTuple_Pack(3,
-                      PyLong_FromLong(points[0]),
-                      PyLong_FromLong(points[1]),
-                      PyLong_FromLong(points[2]));
-}
-
-Py_ssize_t _AoC_y2022_d18_count_surface(PyObject *points) {
-  long min[3] = {LONG_MAX};
-  long max[3] = {LONG_MIN};
-  {
-    PyObject *points_iter = PyObject_GetIter(points);
-    PyObject *point;
-    while ((point = PyIter_Next(points_iter))) {
-      for (Py_ssize_t dim = 0; dim < 3; ++dim) {
-        long value = PyLong_AsLong(PyTuple_GetItem(point, dim));
-        min[dim] = Py_MIN(min[dim], value - 1);
-        max[dim] = Py_MAX(max[dim], value + 1);
-      }
-      Py_DECREF(point);
-    }
+PyObject *_AoC_y2022_d18_make_point(const long point[static 3]) {
+  PyObject *p = PyTuple_New(3);
+  for (Py_ssize_t dim = 0; dim < 3; ++dim) {
+    PyTuple_SET_ITEM(p, dim, PyLong_FromLong(point[dim]));
   }
-  PyObject *visited = PySet_New(0);
-  PyObject *lo_bound = _AoC_y2022_d18_make_point(min);
-  PyObject *hi_bound = _AoC_y2022_d18_make_point(max);
-  PyObject *point = Py_NewRef(lo_bound);
-  Py_ssize_t surface_area =
-      _AoC_y2022_d18_count_surface_3d_flood_fill(point,
-                                                 points,
-                                                 visited,
-                                                 lo_bound,
-                                                 hi_bound);
-  Py_DECREF(visited);
-  Py_DECREF(point);
-  Py_DECREF(lo_bound);
-  Py_DECREF(hi_bound);
-  return surface_area;
+  return p;
 }
 
 PyObject *AoC_y2022_d18(PyObject *unicode_input) {
   PyObject *solution = 0;
   PyObject *points = PySet_New(0);
+  PyObject *visited = PySet_New(0);
   PyObject *lines = PyUnicode_Splitlines(unicode_input, 0);
-  if (!lines || !points) {
+  if (!points || !visited || !lines) {
     goto done;
   }
 
+  long lo_bound[3] = {LONG_MAX};
+  long hi_bound[3] = {LONG_MIN};
   Py_ssize_t num_points = PyList_Size(lines);
   Py_ssize_t num_sides = 0;
   for (Py_ssize_t i = 0; i < num_points; ++i) {
@@ -118,10 +90,14 @@ PyObject *AoC_y2022_d18(PyObject *unicode_input) {
     if (!line_parts) {
       goto done;
     }
-    PyObject *x = PyLong_FromUnicodeObject(PyList_GetItem(line_parts, 0), 10);
-    PyObject *y = PyLong_FromUnicodeObject(PyList_GetItem(line_parts, 1), 10);
-    PyObject *z = PyLong_FromUnicodeObject(PyList_GetItem(line_parts, 2), 10);
-    PyObject *point = PyTuple_Pack(3, x, y, z);
+    PyObject *point = PyTuple_New(3);
+    for (Py_ssize_t dim = 0; dim < PyTuple_Size(point); ++dim) {
+      PyObject *value_str = PyList_GetItem(line_parts, dim);
+      PyObject *value = PyLong_FromUnicodeObject(value_str, 10);
+      PyTuple_SET_ITEM(point, dim, value);
+      lo_bound[dim] = Py_MIN(lo_bound[dim], PyLong_AsLong(value) - 1);
+      hi_bound[dim] = Py_MAX(hi_bound[dim], PyLong_AsLong(value) + 1);
+    }
     num_sides += 6;
     PyObject *adjacent = _AoC_y2022_d18_make_adjacent_points(point);
     for (Py_ssize_t i_adj = 0; i_adj < PyList_Size(adjacent); ++i_adj) {
@@ -134,11 +110,22 @@ PyObject *AoC_y2022_d18(PyObject *unicode_input) {
       goto done;
     }
   }
-  Py_ssize_t surface_area = _AoC_y2022_d18_count_surface(points);
+  PyObject *lo_bound_py = _AoC_y2022_d18_make_point(lo_bound);
+  PyObject *hi_bound_py = _AoC_y2022_d18_make_point(hi_bound);
+  PyObject *begin = Py_NewRef(lo_bound_py);
+  Py_ssize_t surface_area = _AoC_y2022_d18_count_3d_surface(begin,
+                                                            points,
+                                                            visited,
+                                                            lo_bound_py,
+                                                            hi_bound_py);
+  Py_DECREF(begin);
+  Py_DECREF(lo_bound_py);
+  Py_DECREF(hi_bound_py);
   solution = PyUnicode_FromFormat("%zd %zd", num_sides, surface_area);
 
 done:
   Py_XDECREF(points);
+  Py_XDECREF(visited);
   Py_XDECREF(lines);
   return solution;
 }
