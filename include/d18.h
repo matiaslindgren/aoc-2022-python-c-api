@@ -64,36 +64,31 @@ Py_ssize_t _AoC_y2022_d18_count_surface_3d_flood_fill(PyObject *point,
   return area;
 }
 
-PyObject *_AoC_y2022_d18_make_point(const long x, const long y, const long z) {
+PyObject *_AoC_y2022_d18_make_point(const long points[static 3]) {
   return PyTuple_Pack(3,
-                      PyLong_FromLong(x),
-                      PyLong_FromLong(y),
-                      PyLong_FromLong(z));
+                      PyLong_FromLong(points[0]),
+                      PyLong_FromLong(points[1]),
+                      PyLong_FromLong(points[2]));
 }
 
 Py_ssize_t _AoC_y2022_d18_count_surface(PyObject *points) {
-  long xmin = LONG_MAX;
-  long ymin = LONG_MAX;
-  long zmin = LONG_MAX;
-  long xmax = LONG_MIN;
-  long ymax = LONG_MIN;
-  long zmax = LONG_MIN;
+  long min[3] = {LONG_MAX};
+  long max[3] = {LONG_MIN};
   {
     PyObject *points_iter = PyObject_GetIter(points);
     PyObject *point;
     while ((point = PyIter_Next(points_iter))) {
-      xmin = Py_MIN(xmin, PyLong_AsLong(PyTuple_GetItem(point, 0)) - 1);
-      ymin = Py_MIN(ymin, PyLong_AsLong(PyTuple_GetItem(point, 1)) - 1);
-      zmin = Py_MIN(zmin, PyLong_AsLong(PyTuple_GetItem(point, 2)) - 1);
-      xmax = Py_MAX(xmax, PyLong_AsLong(PyTuple_GetItem(point, 0)) + 1);
-      ymax = Py_MAX(ymax, PyLong_AsLong(PyTuple_GetItem(point, 1)) + 1);
-      zmax = Py_MAX(zmax, PyLong_AsLong(PyTuple_GetItem(point, 2)) + 1);
+      for (Py_ssize_t dim = 0; dim < 3; ++dim) {
+        long value = PyLong_AsLong(PyTuple_GetItem(point, dim));
+        min[dim] = Py_MIN(min[dim], value - 1);
+        max[dim] = Py_MAX(max[dim], value + 1);
+      }
       Py_DECREF(point);
     }
   }
   PyObject *visited = PySet_New(0);
-  PyObject *lo_bound = _AoC_y2022_d18_make_point(xmin, ymin, zmin);
-  PyObject *hi_bound = _AoC_y2022_d18_make_point(xmax, ymax, zmax);
+  PyObject *lo_bound = _AoC_y2022_d18_make_point(min);
+  PyObject *hi_bound = _AoC_y2022_d18_make_point(max);
   PyObject *point = Py_NewRef(lo_bound);
   Py_ssize_t surface_area =
       _AoC_y2022_d18_count_surface_3d_flood_fill(point,
@@ -110,10 +105,9 @@ Py_ssize_t _AoC_y2022_d18_count_surface(PyObject *points) {
 
 PyObject *AoC_y2022_d18(PyObject *unicode_input) {
   PyObject *solution = 0;
-  PyObject *const1 = PyLong_FromLong(1);
   PyObject *points = PySet_New(0);
   PyObject *lines = PyUnicode_Splitlines(unicode_input, 0);
-  if (!lines || !const1 || !points) {
+  if (!lines || !points) {
     goto done;
   }
 
@@ -144,7 +138,6 @@ PyObject *AoC_y2022_d18(PyObject *unicode_input) {
   solution = PyUnicode_FromFormat("%zd %zd", num_sides, surface_area);
 
 done:
-  Py_XDECREF(const1);
   Py_XDECREF(points);
   Py_XDECREF(lines);
   return solution;
