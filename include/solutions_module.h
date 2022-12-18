@@ -18,6 +18,7 @@
 #include "d13.h"  // NOTE: defines a custom PyTypeObject
 #include "d14.h"
 #include "d15.h"
+#include "d17.h"
 
 static PyObject *_AoC_solve_y2022(int day, PyObject *unicode_input) {
   switch (day) {
@@ -51,6 +52,8 @@ static PyObject *_AoC_solve_y2022(int day, PyObject *unicode_input) {
       return AoC_y2022_d14(unicode_input);
     case 15:
       return AoC_y2022_d15(unicode_input);
+    case 17:
+      return AoC_y2022_d17(unicode_input);
   }
   return PyErr_Format(PyExc_ValueError,
                       "no solution implemented for day %d",
