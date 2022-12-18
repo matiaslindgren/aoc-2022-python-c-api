@@ -4,6 +4,11 @@ set -ue
 ok=1
 
 for day in $(seq 1 25); do
+	if [ $# -eq 1 ]; then
+		if [ -a $day -ne $1 ]; then
+			continue;
+		fi
+	fi
 	f_correct="$(printf './txt/correct/%.2d.txt' $day)"
 	if [ ! -f "$f_correct" ]; then
 		continue;
