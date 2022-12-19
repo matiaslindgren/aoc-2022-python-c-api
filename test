@@ -5,7 +5,7 @@ ok=1
 
 for day in $(seq 1 25); do
 	if [ $# -eq 1 ]; then
-		if [ -a $day -ne $1 ]; then
+		if [ $day -ne $1 ]; then
 			continue;
 		fi
 	fi
