@@ -19,25 +19,21 @@ PyObject *_AoC_y2022_d20_find_prev(PyObject *head) {
   return node;
 }
 
-PyObject *_AoC_y2022_d20_mix(PyObject *init_values,
+PyObject *_AoC_y2022_d20_mix(PyObject *values,
                              Py_ssize_t key,
                              Py_ssize_t iterations) {
   PyObject *result = 0;
-  Py_ssize_t num_items = PyList_Size(init_values);
+  Py_ssize_t num_items = PyList_Size(values);
   PyObject *items = PyList_New(num_items);
-  PyObject *values = PyList_New(num_items);
   PyObject *wrap = PyLong_FromSsize_t(num_items - 1);
   PyObject *key_factor = PyLong_FromSsize_t(key);
-  if (!items || !values || !wrap || !key_factor) {
+  if (!items || !wrap || !key_factor) {
     goto done;
   }
 
   for (Py_ssize_t i = 0; i < num_items; ++i) {
-    PyObject *init_value = PyList_GetItem(init_values, i);
-    PyObject *value = PyNumber_Multiply(init_value, key_factor);
-    Py_INCREF(value);
-    PyList_SET_ITEM(values, i, value);
     PyObject *item = PyDict_New();
+    PyObject *value = PyNumber_Multiply(PyList_GetItem(values, i), key_factor);
     PyDict_SetItemString(item, "value", value);
     PyList_SET_ITEM(items, i, item);
   }
@@ -85,7 +81,6 @@ PyObject *_AoC_y2022_d20_mix(PyObject *init_values,
 
 done:
   Py_XDECREF(items);
-  Py_XDECREF(values);
   Py_XDECREF(key_factor);
   Py_XDECREF(wrap);
   return result;
