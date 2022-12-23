@@ -1,6 +1,5 @@
 #ifndef _AOC_Y2022_D15_H_INCLUDED
 #define _AOC_Y2022_D15_H_INCLUDED
-#include <limits.h>
 #include <math.h>
 #include <stdio.h>
 
@@ -28,24 +27,6 @@ PyObject *_AoC_y2022_d15_L1_distance(PyObject *lhs, PyObject *rhs) {
   return distance;
 }
 
-PyObject *_AoC_y2022_d15_x_minmax(PyObject *sensors, const long long y) {
-  long long x_min = LLONG_MAX;
-  long long x_max = LLONG_MIN;
-  for (Py_ssize_t i = 0; i < PyList_Size(sensors); ++i) {
-    PyObject *sensor_data = PyList_GetItem(sensors, i);
-    PyObject *sensor = PyTuple_GetItem(sensor_data, 0);
-    const long long x_sensor = PyLong_AsLongLong(PyTuple_GetItem(sensor, 0));
-    const long long y_sensor = PyLong_AsLongLong(PyTuple_GetItem(sensor, 1));
-    const long long srange = PyLong_AsLongLong(PyTuple_GetItem(sensor_data, 2));
-    if (y < y_sensor - srange || y_sensor + srange < y) {
-      continue;
-    }
-    x_min = Py_MIN(x_min, x_sensor - srange);
-    x_max = Py_MAX(x_max, x_sensor + srange);
-  }
-  return _AoC_y2022_d15_make_point(x_min, x_max);
-}
-
 int AoC_y2022_d15_is_inside_sensor_range(PyObject *sensor_data,
                                          PyObject *point) {
   PyObject *sensor = PyTuple_GetItem(sensor_data, 0);
@@ -56,36 +37,34 @@ int AoC_y2022_d15_is_inside_sensor_range(PyObject *sensor_data,
   return yes;
 }
 
-PyObject *_AoC_y2022_d15_find_part1(PyObject *sensors) {
-  const long long y = 2000000;
-  PyObject *x_minmax = _AoC_y2022_d15_x_minmax(sensors, y);
-  const long long x_min = PyLong_AsLongLong(PyTuple_GetItem(x_minmax, 0));
-  const long long x_max = PyLong_AsLongLong(PyTuple_GetItem(x_minmax, 1));
-  Py_DECREF(x_minmax);
-
+PyObject *_AoC_y2022_d15_find_part1(PyObject *sensors, const long long y) {
   long long part1 = 0;
-  for (long long x = x_min; x < x_max; ++x) {
-    PyObject *point = _AoC_y2022_d15_make_point(x, y);
-    for (Py_ssize_t i = 0; i < PyList_Size(sensors); ++i) {
-      PyObject *sensor_data = PyList_GetItem(sensors, i);
-      PyObject *beacon = PyTuple_GetItem(sensor_data, 1);
-      if (1 == PyObject_RichCompareBool(point, beacon, Py_EQ)) {
-        continue;
-      }
-      if (AoC_y2022_d15_is_inside_sensor_range(sensor_data, point)) {
-        ++part1;
-        break;
-      }
+  for (Py_ssize_t i = 0; i < PyList_Size(sensors); ++i) {
+    PyObject *sensor_data = PyList_GetItem(sensors, i);
+    PyObject *sensor = PyTuple_GetItem(sensor_data, 0);
+    PyObject *beacon = PyTuple_GetItem(sensor_data, 1);
+    PyObject *srange = PyTuple_GetItem(sensor_data, 2);
+    const long long y_sensor = PyLong_AsLongLong(PyTuple_GetItem(sensor, 1));
+    const long long range = PyLong_AsLongLong(srange);
+    if (y_sensor - range <= y && y <= y_sensor + range) {
+      part1 += 2 * (range - llabs(y - y_sensor)) + 1;
+      const long long y_beacon = PyLong_AsLongLong(PyTuple_GetItem(beacon, 1));
+      part1 -= y_beacon == y;
+      part1 -= y_sensor == y;
     }
-    Py_DECREF(point);
+    /* const long long xs = PyLong_AsLongLong(PyTuple_GetItem(sensor, 0)); */
+    PySys_FormatStdout("%zd %S %lld %lld %lld\n",
+                       i,
+                       sensor,
+                       range,
+                       range - llabs(y - y_sensor),
+                       part1);
   }
-
   return PyLong_FromLongLong(part1);
 }
 
-PyObject *_AoC_y2022_d15_find_part2(PyObject *sensors) {
+PyObject *_AoC_y2022_d15_find_part2(PyObject *sensors, const long long limit) {
   PyObject *const1 = PyLong_FromLong(1);
-  const long long limit = 4000000;
   PyObject *hidden_beacon = 0;
   for (long long y = 0; !hidden_beacon && y <= limit; ++y) {
     long long x_jump = 0;
@@ -131,13 +110,19 @@ PyObject *_AoC_y2022_d15_find_part2(PyObject *sensors) {
 
 PyObject *AoC_y2022_d15(PyObject *unicode_input) {
   PyObject *solution = 0;
-  PyObject *sensors = PyList_New(0);
+  PyObject *sensors = 0;
   PyObject *lines = PyUnicode_Splitlines(unicode_input, 0);
-  if (!lines || !sensors) {
+  if (!lines) {
     goto done;
   }
 
-  for (Py_ssize_t i = 0; i < PyList_Size(lines); ++i) {
+  Py_ssize_t num_sensors = PyList_Size(lines);
+  sensors = PyList_New(num_sensors);
+  if (!sensors) {
+    goto done;
+  }
+
+  for (Py_ssize_t i = 0; i < num_sensors; ++i) {
     PyObject *line = PyList_GetItem(lines, i);
     const char *line_bytes = PyUnicode_AsUTF8(line);
     long long x_sensor = 0;
@@ -153,18 +138,17 @@ PyObject *AoC_y2022_d15(PyObject *unicode_input) {
     PyObject *sensor = _AoC_y2022_d15_make_point(x_sensor, y_sensor);
     PyObject *beacon = _AoC_y2022_d15_make_point(x_beacon, y_beacon);
     PyObject *srange = _AoC_y2022_d15_L1_distance(sensor, beacon);
-    PyObject *sensor_data = PyTuple_New(3);
-    PyTuple_SET_ITEM(sensor_data, 0, sensor);
-    PyTuple_SET_ITEM(sensor_data, 1, beacon);
-    PyTuple_SET_ITEM(sensor_data, 2, srange);
-    PyList_Append(sensors, sensor_data);
+    PyObject *sensor_data = PyTuple_Pack(3, sensor, beacon, srange);
+    PyList_SET_ITEM(sensors, i, sensor_data);
   }
 
-  PyObject *part1_py = _AoC_y2022_d15_find_part1(sensors);
-  PyObject *part2_py = _AoC_y2022_d15_find_part2(sensors);
-  solution = PyUnicode_FromFormat("%S %S", part1_py, part2_py);
-  Py_DECREF(part1_py);
-  Py_DECREF(part2_py);
+  PyObject *part1 = _AoC_y2022_d15_find_part1(sensors, 10);
+  /* PyObject *part1 = _AoC_y2022_d15_find_part1(sensors, 2000000); */
+  PyObject *part2 = PyLong_FromLong(0);
+  /* PyObject *part2 = _AoC_y2022_d15_find_part2(sensors, 4000000); */
+  solution = PyUnicode_FromFormat("%S %S", part1, part2);
+  Py_DECREF(part1);
+  Py_DECREF(part2);
 
 done:
   Py_XDECREF(lines);
