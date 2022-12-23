@@ -189,7 +189,6 @@ PyObject *AoC_y2022_d23(PyObject *unicode_input) {
 
   enum _AoC_y2022_d23_direction current_facing = direction_north;
   for (Py_ssize_t round = 0; part2 == 0; ++round) {
-    /* _AoC_y2022_d23_dump_map(&map); */
     PyObject *proposed_moves = PyDict_New();
     {
       PyObject *elves_iter = PyObject_GetIter(elves);
