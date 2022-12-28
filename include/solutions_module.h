@@ -22,6 +22,7 @@
 #include "d16.h"
 #include "d17.h"
 #include "d18.h"
+#include "d19.h"
 #include "d20.h"
 #include "d21.h"
 #include "d23.h"
@@ -66,6 +67,8 @@ static PyObject *_AoC_solve_y2022(int day, PyObject *unicode_input) {
       return AoC_y2022_d17(unicode_input);
     case 18:
       return AoC_y2022_d18(unicode_input);
+    case 19:
+      return AoC_y2022_d19(unicode_input);
     case 20:
       return AoC_y2022_d20(unicode_input);
     case 21:
