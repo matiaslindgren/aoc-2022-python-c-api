@@ -49,7 +49,7 @@ For example, solving day 2:
 ```
 
 Steps in more detail:
-1. [Read](./include/solutions_module.h#L103) [UTF-8 input](./txt/input/01.txt) into a single Python `str`.
+1. [Read](./include/solutions_module.h#L103) the entire [UTF-8 input file](./txt/input/02.txt) into a single Python `str`.
 2. Pass input `str` as argument to the [solver function](./include/solutions_module.h#L35:L36).
-3. [Compute](./include/d02.h#L9) numerical solutions to part 1 and 2, then [format](./include/d02.h#L58) the numbers into a single space-separated `str`.
+3. [Compute](./include/d02.h#L24-L56) numerical solutions to part 1 and 2, then [format](./include/d02.h#L58) the numbers into a single space-separated `str`.
 4. Cleanup refcounts, return the solution, and print to stdout.
