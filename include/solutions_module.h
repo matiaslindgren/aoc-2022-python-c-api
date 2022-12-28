@@ -1,6 +1,7 @@
 #ifndef _AOC_Y2022_SOLUTIONS_H_INCLUDED
 #define _AOC_Y2022_SOLUTIONS_H_INCLUDED
 #include <stdio.h>
+#include <time.h>
 
 #include "common.h"
 #include "d01.h"
@@ -105,7 +106,15 @@ static PyObject *AoC_solve_y2022(PyObject *module, PyObject *args) {
     goto error;
   }
 
-  PyObject *solution = _AoC_solve_y2022(day, unicode_input);
+  PyObject *solution = 0;
+  {
+    const clock_t start_time = clock();
+    solution = _AoC_solve_y2022(day, unicode_input);
+    const clock_t end_time = clock();
+    const double solve_msec =
+        1e3 * ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+    fprintf(stderr, "%.1f ms\n", solve_msec);
+  }
   Py_DECREF(unicode_input);
   if (!solution) {
     goto error;
