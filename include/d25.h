@@ -108,21 +108,13 @@ PyObject *AoC_y2022_d25(PyObject *unicode_input) {
   }
 
   PyObject *sum = PyLong_FromLong(0);
-  Py_ssize_t num_lines = PyList_Size(lines);
-  for (Py_ssize_t i = 0; i < num_lines; ++i) {
+  for (Py_ssize_t i = 0; i < PyList_Size(lines); ++i) {
     PyObject *line = PyList_GetItem(lines, i);
     PyObject *num = _AoC_y2022_d25_parse_snafu(line);
-    PyObject *x = _AoC_y2022_d25_format_snafu(num);
-    PySys_FormatStdout("%zd %S %S %S\n", i, line, num, x);
     Py_SETREF(sum, PyNumber_Add(sum, num));
     Py_DECREF(num);
   }
-
-  PyObject *part1 = _AoC_y2022_d25_format_snafu(sum);
-  PyObject *part2 = PyLong_FromLong(0);
-  solution = PyUnicode_FromFormat("%S %S", part1, part2);
-  Py_DECREF(part1);
-  Py_DECREF(part2);
+  solution = _AoC_y2022_d25_format_snafu(sum);
   Py_DECREF(sum);
 
 done:
