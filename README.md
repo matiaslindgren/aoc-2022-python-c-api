@@ -29,7 +29,7 @@ Nothing intelligent to see here.
 
 ## Explanation
 
-`py_aoc` is a program that runs the Python interpreter [entrypoint](./include/solutions_module.h#L231) by [linking](./Makefile#L26) to the [compiled](./Makefile#L53-L57) `libpython3` library:
+`py_aoc` is a program that runs the Python interpreter [entrypoint](./include/solutions_module.h#L237) by [linking](./Makefile#L26) to the [compiled](./Makefile#L53-L57) `libpython3` library:
 ```
 > ./out/py_aoc
 Python 3.11.0 (main, Dec 15 2022, 19:30:38) [Clang 11.0.1 ] on linux
@@ -38,7 +38,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 hi
 ```
 
-`py_aoc` defines a Python builtin-module named [`aoc_solve`](./include/solutions_module.h#L151-L157) with a single function named [`y2022`](./include/solutions_module.h#L135-L140).
+`py_aoc` defines a Python builtin-module named [`aoc_solve`](./include/solutions_module.h#L157-L163) with a single function named [`y2022`](./include/solutions_module.h#L141-L146).
 The function takes a single integer argument between 1 to 25 for the Advent of Code 2022 challenge to solve.
 
 For example, solving day 2:
@@ -49,7 +49,7 @@ For example, solving day 2:
 ```
 
 Steps in more detail:
-1. [Read](./include/solutions_module.h#L103) the entire [UTF-8 input file](./txt/input/02.txt) into a single Python `str`.
-2. Pass input `str` as argument to the [solver function](./include/solutions_module.h#L35:L36).
+1. [Read](./include/solutions_module.h#L105) the entire [UTF-8 input file](./txt/input/02.txt) into a single Python `str`.
+2. Pass input `str` as argument to the [solver function](./include/solutions_module.h#L37:L38).
 3. [Compute](./include/d02.h#L24-L56) numerical solutions to part 1 and 2, then [format](./include/d02.h#L58) the numbers into a single space-separated `str`.
 4. Cleanup refcounts, return the solution, and print to stdout.
