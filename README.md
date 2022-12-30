@@ -29,7 +29,7 @@ Nothing intelligent to see here.
 
 ## Explanation
 
-`py_aoc` is a program that runs the Python interpreter [entrypoint](./include/solutions_module.h#L237) by [linking](./Makefile#L26) to the [compiled](./Makefile#L53-L57) `libpython3` library:
+`py_aoc` is a program that runs the Python interpreter [entrypoint](./include/solutions_module.h#L237):
 ```
 > ./out/py_aoc
 Python 3.11.0 (main, Dec 15 2022, 19:30:38) [Clang 11.0.1 ] on linux
@@ -38,7 +38,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 hi
 ```
 
-`py_aoc` defines a Python builtin-module named [`aoc_solve`](./include/solutions_module.h#L157-L163) with a single function named [`y2022`](./include/solutions_module.h#L141-L146).
+In addition to being a normal Python interpreter, `py_aoc` defines a Python builtin-module named [`aoc_solve`](./include/solutions_module.h#L157-L163) containing a single function named [`y2022`](./include/solutions_module.h#L141-L146).
 The function takes a single integer argument between 1 to 25 for the Advent of Code 2022 challenge to solve.
 
 For example, solving day 2:
