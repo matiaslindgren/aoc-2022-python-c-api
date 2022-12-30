@@ -1,17 +1,58 @@
 #ifndef _AOC_Y2022_D16_H_INCLUDED
 #define _AOC_Y2022_D16_H_INCLUDED
+#include <limits.h>
+
 #include "common.h"
 
-PyObject *_AoC_y2022_d16_total_pressure(PyObject *flows, PyObject *solution) {
-  PyObject *total_pressure = PyLong_FromLong(0);
-  for (Py_ssize_t i_valve = 0; i_valve < PyList_Size(flows); ++i_valve) {
-    PyObject *flow = PyList_GetItem(flows, i_valve);
-    PyObject *time_left = PyList_GetItem(solution, i_valve);
-    PyObject *pressure = PyNumber_Multiply(flow, time_left);
-    Py_SETREF(total_pressure, PyNumber_Add(total_pressure, pressure));
-    Py_DECREF(pressure);
+// Floyd-Warshall
+PyObject *_AoC_y2022_d16_all_pairs_shortest_paths(PyObject *valves) {
+  const Py_ssize_t n = PyList_Size(valves);
+  PyObject *dist = PyList_New(n * n);
+
+  for (Py_ssize_t i = 0; i < n; ++i) {
+    for (Py_ssize_t j = 0; j < n; ++j) {
+      PyList_SET_ITEM(dist, i * n + j, PyLong_FromLong(LONG_MAX));
+    }
   }
-  return total_pressure;
+
+  for (Py_ssize_t i = 0; i < n; ++i) {
+    PyObject *valve = PyList_GetItem(valves, i);
+    PyObject *adjacent = PyTuple_GetItem(valve, 2);
+    for (Py_ssize_t i_adj = 0; i_adj < PyList_Size(adjacent); ++i_adj) {
+      PyObject *adj_id = PyList_GetItem(adjacent, i_adj);
+      Py_ssize_t j = 0;
+      while (j < PyList_Size(valves)) {
+        PyObject *adj = PyList_GetItem(valves, j);
+        if (PyUnicode_Compare(PyTuple_GetItem(adj, 0), adj_id) == 0) {
+          break;
+        }
+        ++j;
+      }
+      PyList_SetItem(dist, i * n + j, PyLong_FromLong(1));
+      PyList_SetItem(dist, j * n + i, PyLong_FromLong(1));
+    }
+  }
+
+  for (Py_ssize_t i = 0; i < n; ++i) {
+    PyList_SetItem(dist, i * n + i, PyLong_FromLong(0));
+  }
+
+  for (Py_ssize_t k = 0; k < n; ++k) {
+    for (Py_ssize_t i = 0; i < n; ++i) {
+      for (Py_ssize_t j = 0; j < n; ++j) {
+        PyObject *dist_cur = PyList_GetItem(dist, i * n + j);
+        PyObject *dist_new = PyNumber_Add(PyList_GetItem(dist, i * n + k),
+                                          PyList_GetItem(dist, k * n + j));
+        if (PyObject_RichCompareBool(dist_new, dist_cur, Py_LT) == 1) {
+          PyList_SetItem(dist, i * n + j, dist_new);
+        } else {
+          Py_DECREF(dist_new);
+        }
+      }
+    }
+  }
+
+  return dist;
 }
 
 PyObject *_AoC_y2022_d16_copy_list(PyObject *l1) {
@@ -23,291 +64,116 @@ PyObject *_AoC_y2022_d16_copy_list(PyObject *l1) {
   return l2;
 }
 
-PyObject *_AoC_y2022_d16_find_max_pressures(const Py_ssize_t src,
-                                            PyObject *const flows,
-                                            PyObject *const skip_valves,
-                                            PyObject *const shortest_paths,
-                                            PyObject *const solution,
-                                            const long time_left) {
-  PyObject *best_solution = Py_NewRef(solution);
-  PyObject *best_pressure = _AoC_y2022_d16_total_pressure(flows, best_solution);
-  if (time_left <= 0) {
-    goto done;
-  }
-
-  const Py_ssize_t num_valves = PyList_Size(flows);
-  for (Py_ssize_t dst = 0; dst < num_valves; ++dst) {
-    if (skip_valves) {
-      PyObject *dst_key = PyLong_FromSsize_t(dst);
-      const int skip = PySet_Contains(skip_valves, dst_key);
-      Py_DECREF(dst_key);
-      if (skip) {
-        continue;
-      }
-    }
-    if (src == dst) {
+PyObject *_AoC_y2022_d16_total_pressure(PyObject *valves, PyObject *solution) {
+  PyObject *total_pressure = PyLong_FromLong(0);
+  for (Py_ssize_t i = 0; i < PyList_Size(valves); ++i) {
+    PyObject *time_opened = PyList_GetItem(solution, i);
+    if (time_opened == Py_None) {
       continue;
     }
-    const int already_visited =
-        PyLong_AsLong(PyList_GetItem(solution, dst)) > 0;
-    if (already_visited) {
-      continue;
-    }
-
-    PyObject *src2dst =
-        PyTuple_Pack(2, PyLong_FromLong(src), PyLong_FromLong(dst));
-    PyObject *dist = PyDict_GetItem(shortest_paths, src2dst);
-    Py_DECREF(src2dst);
-    const long next_time_left = time_left - PyLong_AsLong(dist) - 1;
-    if (next_time_left < 0) {
-      continue;
-    }
-    PyObject *next_solution = _AoC_y2022_d16_copy_list(solution);
-    PyList_SetItem(next_solution, dst, PyLong_FromLong(next_time_left));
-    PyObject *candidate_solution =
-        _AoC_y2022_d16_find_max_pressures(dst,
-                                          flows,
-                                          skip_valves,
-                                          shortest_paths,
-                                          next_solution,
-                                          next_time_left);
-    PyObject *pressure =
-        _AoC_y2022_d16_total_pressure(flows, candidate_solution);
-    if (1 == PyObject_RichCompareBool(best_pressure, pressure, Py_LT)) {
-      Py_SETREF(best_solution, candidate_solution);
-      Py_SETREF(best_pressure, pressure);
-    } else {
-      Py_DECREF(candidate_solution);
-      Py_DECREF(pressure);
-    }
-    Py_DECREF(next_solution);
+    PyObject *flow = PyTuple_GetItem(PyList_GetItem(valves, i), 1);
+    PyObject *pressure = PyNumber_Multiply(flow, time_opened);
+    Py_SETREF(total_pressure, PyNumber_Add(total_pressure, pressure));
+    Py_DECREF(pressure);
   }
-
-done:
-  Py_DECREF(best_pressure);
-  return best_solution;
-}
-
-PyObject *_AoC_y2022_d16_find_next_min_dist_node(PyObject *visited,
-                                                 PyObject *distances) {
-  PyObject *min_id = 0;
-
-  PyObject *valve_ids = PyDict_Keys(visited);
-  const Py_ssize_t num_valves = PyList_Size(valve_ids);
-
-  for (Py_ssize_t i = 0; i < num_valves; ++i) {
-    PyObject *cur_id = PyList_GetItem(valve_ids, i);
-    if (PyDict_GetItem(visited, cur_id) == Py_True) {
-      continue;
-    }
-    if (!min_id) {
-      min_id = cur_id;
-      continue;
-    }
-    PyObject *dist_cur = PyDict_GetItem(distances, cur_id);
-    PyObject *dist_min = PyDict_GetItem(distances, min_id);
-    if (PyObject_RichCompareBool(dist_cur, dist_min, Py_LT) == 1) {
-      min_id = cur_id;
-    }
-  }
-
-  return min_id;
-}
-
-// Dijkstra, undirected, every edge has length 1
-PyObject *_AoC_y2022_d16_shortest_path(PyObject *valves,
-                                       PyObject *src,
-                                       PyObject *dst) {
-  PyObject *valve_ids = PyDict_Keys(valves);
-  const Py_ssize_t num_valves = PyList_Size(valve_ids);
-
-  PyObject *visited = PyDict_New();
-  PyObject *distances = PyDict_New();
-  for (Py_ssize_t i = 0; i < num_valves; ++i) {
-    PyObject *v = PyList_GetItem(valve_ids, i);
-    PyDict_SetItem(visited, v, PyBool_FromLong(0));
-    PyDict_SetItem(distances, v, PyLong_FromLong(num_valves));
-  }
-
-  PyDict_SetItem(distances, src, PyLong_FromLong(0));
-
-  while (PyDict_GetItem(visited, dst) == Py_False) {
-    PyObject *cur = _AoC_y2022_d16_find_next_min_dist_node(visited, distances);
-    PyDict_SetItem(visited, cur, PyBool_FromLong(1));
-    PyObject *adjacent =
-        PyDict_GetItemString(PyDict_GetItem(valves, cur), "adjacent");
-
-    for (Py_ssize_t i_adj = 0; i_adj < PyList_Size(adjacent); ++i_adj) {
-      PyObject *adj = PyList_GetItem(adjacent, i_adj);
-      if (PyDict_GetItem(visited, adj) == Py_True) {
-        continue;
-      }
-      PyObject *dist_to_cur = PyDict_GetItem(distances, cur);
-      PyObject *dist_to_adj = PyDict_GetItem(distances, adj);
-      PyObject *one = PyLong_FromLong(1);
-      PyObject *cur_to_adj = PyNumber_Add(dist_to_cur, one);
-      Py_DECREF(one);
-      if (PyObject_RichCompareBool(cur_to_adj, dist_to_adj, Py_LT) == 1) {
-        PyDict_SetItem(distances, adj, cur_to_adj);
-      } else {
-        Py_DECREF(cur_to_adj);
-      }
-    }
-  }
-
-  PyObject *min_dist = Py_NewRef(PyDict_GetItem(distances, dst));
-  Py_DECREF(distances);
-  Py_DECREF(visited);
-  return min_dist;
-}
-
-PyObject *_AoC_y2022_d16_all_pairs_shortest_paths(PyObject *valves) {
-  PyObject *shortest_paths = PyDict_New();
-
-  PyObject *valve_ids = PyDict_Keys(valves);
-  const Py_ssize_t num_valves = PyList_Size(valve_ids);
-
-  for (Py_ssize_t i = 0; i < num_valves; ++i) {
-    PyObject *src = PyList_GetItem(valve_ids, i);
-    for (Py_ssize_t j = i + 1; j < num_valves; ++j) {
-      PyObject *dst = PyList_GetItem(valve_ids, j);
-      PyObject *dist = _AoC_y2022_d16_shortest_path(valves, src, dst);
-      PyObject *src2dst = PyTuple_Pack(2, src, dst);
-      PyObject *dst2src = PyTuple_Pack(2, dst, src);
-      PyDict_SetItem(shortest_paths, src2dst, dist);
-      PyDict_SetItem(shortest_paths, dst2src, dist);
-      Py_DECREF(src2dst);
-      Py_DECREF(dst2src);
-    }
-  }
-
-  return shortest_paths;
-}
-
-PyObject *_AoC_y2022_d16_all_valve_partitions(PyObject *flows) {
-  PyObject *queue = PyList_New(0);
-  {
-    const Py_ssize_t num_valves = PyList_Size(flows);
-    PyObject *valves = PyList_New(num_valves - 1);
-    for (Py_ssize_t i = 1; i < num_valves; ++i) {
-      PyList_SET_ITEM(valves, i - 1, PyLong_FromSsize_t(i));
-    }
-    PyObject *a = PySet_New(valves);
-    PyObject *b = PySet_New(0);
-    PyList_Append(queue, PyTuple_Pack(2, a, b));
-  }
-
-  PyObject *partitions = PySet_New(0);
-  PyObject *unique_subsets = PySet_New(0);
-
-  while (PyList_Size(queue)) {
-    PyObject *item = Py_NewRef(PyList_GetItem(queue, 0));
-    PySequence_DelItem(queue, 0);
-    PyObject *a = PyTuple_GetItem(item, 0);
-    PyObject *b = PyTuple_GetItem(item, 1);
-    if (PySet_Size(a) < PySet_Size(b)) {
-      Py_DECREF(item);
-      continue;
-    }
-    PyObject *a_list = PySequence_List(a);
-    PyObject *b_list = PySequence_List(b);
-    PyList_Sort(a_list);
-    PyList_Sort(b_list);
-    PyObject *a_tuple = PySequence_Tuple(a);
-    PyObject *b_tuple = PySequence_Tuple(b);
-    const Py_ssize_t bsize = PyTuple_Size(b_tuple);
-    if (bsize) {
-      if (!PySet_Contains(unique_subsets, a_tuple) &&
-          !PySet_Contains(unique_subsets, b_tuple)) {
-        PySet_Add(partitions, PyTuple_Pack(2, a_tuple, b_tuple));
-      }
-    }
-    PySet_Add(unique_subsets, a_tuple);
-    PySet_Add(unique_subsets, b_tuple);
-    for (Py_ssize_t i = 0; i < PyList_Size(a_list); ++i) {
-      PyObject *x = PyList_GetItem(a_list, i);
-      if (!bsize ||
-          (1 == PyObject_RichCompareBool(PyList_GetItem(b_list, bsize - 1),
-                                         x,
-                                         Py_LT))) {
-        PyObject *a2 = PySet_New(a);
-        PyObject *b2 = PySet_New(b);
-        PySet_Discard(a2, x);
-        PySet_Add(b2, x);
-        PyList_Append(queue, PyTuple_Pack(2, a2, b2));
-      }
-    }
-    Py_DECREF(a_list);
-    Py_DECREF(b_list);
-    Py_DECREF(item);
-  }
-  Py_DECREF(queue);
-  Py_DECREF(unique_subsets);
-
-  Py_SETREF(partitions, PySequence_List(partitions));
-  return partitions;
-}
-
-PyObject *_AoC_y2022_d16_init_solution(PyObject *flows) {
-  const Py_ssize_t num_flows = PyList_Size(flows);
-  PyObject *solution = PyList_New(num_flows);
-  for (Py_ssize_t i = 0; i < num_flows; ++i) {
-    PyList_SET_ITEM(solution, i, PyLong_FromLong(0));
-  }
-  return solution;
-}
-
-PyObject *_AoC_y2022_d16_find_part1(PyObject *flows, PyObject *shortest_paths) {
-  PyObject *solution =
-      _AoC_y2022_d16_find_max_pressures(0,
-                                        flows,
-                                        0,
-                                        shortest_paths,
-                                        _AoC_y2022_d16_init_solution(flows),
-                                        30);
-  PyObject *total_pressure = _AoC_y2022_d16_total_pressure(flows, solution);
-  Py_DECREF(solution);
   return total_pressure;
 }
 
-PyObject *_AoC_y2022_d16_find_part2(PyObject *flows, PyObject *shortest_paths) {
-  PyObject *partitions = _AoC_y2022_d16_all_valve_partitions(flows);
-  PyObject *max_total_pressure = PyLong_FromLong(0);
-  for (Py_ssize_t i = 0; i < PyList_Size(partitions); ++i) {
-    PyObject *partition = PyList_GetItem(partitions, i);
-    PyObject *combined_pressure = PyLong_FromLong(0);
-    for (Py_ssize_t p = 0; p < PyTuple_Size(partition); ++p) {
-      PyObject *skip_valves = PySet_New(PyTuple_GetItem(partition, p));
-      PyObject *max_pressures =
-          _AoC_y2022_d16_find_max_pressures(0,
-                                            flows,
-                                            skip_valves,
-                                            shortest_paths,
-                                            _AoC_y2022_d16_init_solution(flows),
-                                            26);
-      PyObject *total_pressure =
-          _AoC_y2022_d16_total_pressure(flows, max_pressures);
-      Py_SETREF(combined_pressure,
-                PyNumber_Add(combined_pressure, total_pressure));
-      Py_DECREF(total_pressure);
-      Py_DECREF(max_pressures);
-      Py_DECREF(skip_valves);
-    }
-    if (1 == PyObject_RichCompareBool(max_total_pressure,
-                                      combined_pressure,
-                                      Py_LT)) {
-      Py_SETREF(max_total_pressure, combined_pressure);
-    } else {
-      Py_DECREF(combined_pressure);
-    }
+PyObject *_AoC_y2022_d16_make_state(const Py_ssize_t src,
+                                    PyObject *time_left,
+                                    PyObject *solution) {
+  PyObject *state = PyTuple_New(3);
+  PyTuple_SET_ITEM(state, 0, PyLong_FromSsize_t(src));
+  PyTuple_SET_ITEM(state, 1, time_left);
+  PyTuple_SET_ITEM(state, 2, solution);
+  return state;
+}
+
+PyObject *_AoC_y2022_d16_find_max_total_pressure(PyObject *const valves,
+                                                 PyObject *const distances,
+                                                 const long time_limit) {
+  const Py_ssize_t num_valves = PyList_Size(valves);
+  if (!num_valves) {
+    return PyLong_FromLong(0);
   }
-  Py_DECREF(partitions);
-  return max_total_pressure;
+
+  const Py_ssize_t start_valve = 0;
+  PyObject *best_solution = PyList_New(num_valves);
+  for (Py_ssize_t i = 0; i < num_valves; ++i) {
+    PyList_SET_ITEM(best_solution, i, Py_NewRef(Py_None));
+  }
+
+  PyList_SetItem(best_solution, start_valve, PyLong_FromLong(0));
+  PyObject *max_pressure = PyLong_FromLong(0);
+
+  PyObject *branches = PyList_New(1);
+  PyList_SET_ITEM(branches,
+                  0,
+                  _AoC_y2022_d16_make_state(start_valve,
+                                            PyLong_FromLong(time_limit),
+                                            best_solution));
+
+  while (PyList_Size(branches)) {
+    PyObject *item = PyList_GetItem(branches, PyList_Size(branches) - 1);
+    Py_INCREF(item);
+    const Py_ssize_t src = PyLong_AsSsize_t(PyTuple_GetItem(item, 0));
+    PyObject *time_left = Py_NewRef(PyTuple_GetItem(item, 1));
+    PyObject *solution = Py_NewRef(PyTuple_GetItem(item, 2));
+    PySequence_DelItem(branches, PyList_Size(branches) - 1);
+
+    PyObject *pressure = _AoC_y2022_d16_total_pressure(valves, solution);
+    if (PyObject_RichCompareBool(pressure, max_pressure, Py_GT) == 1) {
+      best_solution = solution;
+      Py_SETREF(max_pressure, pressure);
+    } else {
+      Py_DECREF(pressure);
+    }
+
+    if (!PyLong_AsLong(time_left)) {
+      goto end;
+    }
+
+    PyObject *one = PyLong_FromLong(1);
+    Py_SETREF(time_left, PyNumber_Subtract(time_left, one));
+    Py_DECREF(one);
+
+    for (Py_ssize_t dst = 0; dst < num_valves; ++dst) {
+      const int already_open =
+          src == dst || PyList_GetItem(solution, dst) != Py_None;
+      if (already_open) {
+        continue;
+      }
+
+      PyObject *dist = PyList_GetItem(distances, src * num_valves + dst);
+      const int no_time_left =
+          1 == PyObject_RichCompareBool(dist, time_left, Py_GE);
+      if (no_time_left) {
+        continue;
+      }
+
+      PyObject *time_opened = PyNumber_Subtract(time_left, dist);
+      PyObject *next_solution = _AoC_y2022_d16_copy_list(solution);
+      PyList_SetItem(next_solution, dst, Py_NewRef(time_opened));
+      PyObject *next_state =
+          _AoC_y2022_d16_make_state(dst, time_opened, next_solution);
+      PyList_Append(branches, next_state);
+      Py_DECREF(next_state);
+    }
+
+  end:
+    Py_DECREF(time_left);
+    Py_DECREF(solution);
+    Py_DECREF(item);
+  }
+
+  Py_DECREF(branches);
+
+  return max_pressure;
 }
 
 PyObject *_AoC_y2022_d16_parse_valves(PyObject *lines) {
   const Py_ssize_t num_valves = PyList_Size(lines);
-  PyObject *valves = PyDict_New();
+  PyObject *valves = PyList_New(num_valves);
 
   for (Py_ssize_t i = 0; i < num_valves; ++i) {
     PyObject *line = PyList_GetItem(lines, i);
@@ -327,62 +193,189 @@ PyObject *_AoC_y2022_d16_parse_valves(PyObject *lines) {
 
     Py_DECREF(line_parts);
 
-    PyObject *valve = PyDict_New();
-    PyDict_SetItemString(valve, "flow", flow);
-    PyDict_SetItemString(valve, "adjacent", adjacent);
-    PyDict_SetItem(valves, valve_id, valve);
+    PyObject *valve = PyTuple_Pack(3, valve_id, flow, adjacent);
+    PyList_SET_ITEM(valves, i, valve);
+    Py_DECREF(valve_id);
+    Py_DECREF(flow);
+    Py_DECREF(adjacent);
   }
 
+  PyList_Sort(valves);
   return valves;
 }
 
-PyObject *_AoC_y2022_d16_compress_valves(PyObject *valves,
-                                         PyObject *shortest_paths) {
-  PyObject *valve_ids = PyDict_Keys(valves);
-  PyList_Sort(valve_ids);
+PyObject *_AoC_y2022_d16_select_subgraph(PyObject *valves,
+                                         PyObject *distances,
+                                         PyObject *indexes) {
+  const Py_ssize_t num_valves = PyList_Size(valves);
 
-  PyObject *valve_indexes = PyDict_New();
-  PyObject *flows = PyList_New(0);
-
+  PyObject *index_map = PyList_New(0);
   PyObject *root_id = PyUnicode_FromString("AA");
 
-  for (Py_ssize_t i = 0; i < PyList_Size(valve_ids); ++i) {
-    PyObject *valve_id = PyList_GetItem(valve_ids, i);
-    PyObject *valve = PyDict_GetItem(valves, valve_id);
-    PyObject *flow = PyDict_GetItemString(valve, "flow");
-    if (PyUnicode_Compare(valve_id, root_id) == 0 || PyLong_AsLong(flow)) {
-      const Py_ssize_t idx = PyList_Size(flows);
-      PyList_Append(flows, Py_NewRef(flow));
-      PyDict_SetItem(valve_indexes, valve_id, PyLong_FromSsize_t(idx));
+  for (Py_ssize_t i = 0; i < num_valves; ++i) {
+    PyObject *valve_id = PyTuple_GetItem(PyList_GetItem(valves, i), 0);
+    const int is_root_node = PyUnicode_Compare(valve_id, root_id) == 0;
+    PyObject *idx = PyLong_FromSsize_t(i);
+    const int is_in_subgraph = PySet_Contains(indexes, idx);
+    Py_DECREF(idx);
+    if (is_root_node || is_in_subgraph) {
+      PyList_Append(index_map, PyLong_FromSsize_t(i));
     }
   }
 
-  PyObject *indexed_shortest_paths = PyDict_New();
-  PyObject *path_items = PyDict_Items(shortest_paths);
-  for (Py_ssize_t i = 0; i < PyList_Size(path_items); ++i) {
-    PyObject *path = PyList_GetItem(path_items, i);
-    PyObject *src = PyTuple_GetItem(PyTuple_GetItem(path, 0), 0);
-    PyObject *dst = PyTuple_GetItem(PyTuple_GetItem(path, 0), 1);
-    PyObject *src_idx = PyDict_GetItem(valve_indexes, src);
-    PyObject *dst_idx = PyDict_GetItem(valve_indexes, dst);
-    if (src_idx && dst_idx) {
-      PyObject *dist = PyTuple_GetItem(path, 1);
-      PyObject *src2dst = PyTuple_Pack(2, src_idx, dst_idx);
-      PyDict_SetItem(indexed_shortest_paths, src2dst, Py_NewRef(dist));
+  const Py_ssize_t subset_size = PyList_Size(index_map);
+  PyObject *valves_subset = PyList_New(subset_size);
+  for (Py_ssize_t i = 0; i < subset_size; ++i) {
+    const Py_ssize_t i2 = PyLong_AsSsize_t(PyList_GetItem(index_map, i));
+    PyObject *valve = Py_NewRef(PyList_GetItem(valves, i2));
+    PyList_SET_ITEM(valves_subset, i, valve);
+  }
+
+  PyObject *distances_subset = PyList_New(subset_size * subset_size);
+  for (Py_ssize_t i = 0; i < subset_size; ++i) {
+    for (Py_ssize_t j = 0; j < subset_size; ++j) {
+      const Py_ssize_t i2 = PyLong_AsSsize_t(PyList_GetItem(index_map, i));
+      const Py_ssize_t j2 = PyLong_AsSsize_t(PyList_GetItem(index_map, j));
+      PyObject *dist = PyList_GetItem(distances, i2 * num_valves + j2);
+      PyList_SET_ITEM(distances_subset, i * subset_size + j, Py_NewRef(dist));
     }
   }
 
-  Py_DECREF(valve_indexes);
   Py_DECREF(root_id);
+  Py_DECREF(index_map);
 
-  return PyTuple_Pack(2, flows, indexed_shortest_paths);
+  return PyTuple_Pack(2, valves_subset, distances_subset);
+}
+
+PyObject *_AoC_y2022_d16_find_part1(PyObject *valves, PyObject *distances) {
+  return _AoC_y2022_d16_find_max_total_pressure(valves, distances, 30);
+}
+
+PyObject *_AoC_y2022_d16_subset_magnitude(const Py_ssize_t num_valves,
+                                          PyObject *distances,
+                                          PyObject *subset_indexes) {
+  PyObject *indexes = PySequence_List(subset_indexes);
+  PyList_Sort(indexes);
+  const Py_ssize_t subset_size = PyList_Size(indexes);
+  PyObject *magnitude = PyLong_FromLong(0);
+  for (Py_ssize_t i = 0; i < subset_size; ++i) {
+    for (Py_ssize_t j = i + 1; j < subset_size; ++j) {
+      Py_ssize_t src = PyLong_AsSsize_t(PyList_GetItem(indexes, i));
+      Py_ssize_t dst = PyLong_AsSsize_t(PyList_GetItem(indexes, j));
+      PyObject *dist = PyList_GetItem(distances, src * num_valves + dst);
+      Py_SETREF(magnitude, PyNumber_Add(magnitude, dist));
+    }
+  }
+  Py_DECREF(indexes);
+  return magnitude;
+}
+
+PyObject *_AoC_y2022_d16_find_part2(PyObject *valves, PyObject *distances) {
+  PyObject *max_pressure = PyLong_FromLong(0);
+
+  const Py_ssize_t num_valves = PyList_Size(valves);
+  PyObject *partitions = PyList_New(1);
+  {
+    PyObject *partition1 = PySet_New(0);
+    for (Py_ssize_t i = 1; i < num_valves; ++i) {
+      PySet_Add(partition1, PyLong_FromSsize_t(i));
+    }
+    PyObject *partition2 = PySet_New(0);
+    PyList_SET_ITEM(partitions, 0, PyTuple_Pack(2, partition1, partition2));
+    Py_DECREF(partition1);
+    Py_DECREF(partition2);
+  }
+
+  PyObject *seen_partitions = PySet_New(0);
+
+  while (PyList_Size(partitions)) {
+    PyObject *partition = Py_NewRef(PyList_GetItem(partitions, 0));
+    PyObject *partition1 = PyTuple_GetItem(partition, 0);
+    PyObject *partition2 = PyTuple_GetItem(partition, 1);
+    PySequence_DelItem(partitions, 0);
+
+    PyObject *lhs_magnitude =
+        _AoC_y2022_d16_subset_magnitude(num_valves, distances, partition1);
+    PyObject *rhs_magnitude =
+        _AoC_y2022_d16_subset_magnitude(num_valves, distances, partition2);
+    // braindead heuristic without proof
+    if (PyLong_AsLong(lhs_magnitude) < 3 * PyLong_AsLong(rhs_magnitude)) {
+      PyObject *total_pressure = PyLong_FromLong(0);
+      for (size_t p = 0; p < 2; ++p) {
+        PyObject *subset_indexes = (PyObject *[]){partition1, partition2}[p];
+        PyObject *tmp =
+            _AoC_y2022_d16_select_subgraph(valves, distances, subset_indexes);
+        PyObject *valves_subset = PyTuple_GetItem(tmp, 0);
+        PyObject *distances_subset = PyTuple_GetItem(tmp, 1);
+        PyObject *pressure =
+            _AoC_y2022_d16_find_max_total_pressure(valves_subset,
+                                                   distances_subset,
+                                                   26);
+        Py_SETREF(total_pressure, PyNumber_Add(total_pressure, pressure));
+        Py_DECREF(valves_subset);
+        Py_DECREF(distances_subset);
+        Py_DECREF(tmp);
+        Py_DECREF(pressure);
+      }
+      if (PyObject_RichCompareBool(total_pressure, max_pressure, Py_GT) == 1) {
+        Py_SETREF(max_pressure, total_pressure);
+      } else {
+        Py_DECREF(total_pressure);
+      }
+    }
+    Py_DECREF(lhs_magnitude);
+    Py_DECREF(rhs_magnitude);
+
+    // build all partitions, add to queue if not seen
+    PyObject *lhs_iter = PyObject_GetIter(partition1);
+    PyObject *lhs_value;
+    while ((lhs_value = PyIter_Next(lhs_iter))) {
+      PyObject *lhs = PySet_New(partition1);
+      PyObject *rhs = PySet_New(partition2);
+      PySet_Discard(lhs, lhs_value);
+      PySet_Add(rhs, lhs_value);
+
+      const Py_ssize_t lhs_size = PySet_Size(lhs);
+      const Py_ssize_t rhs_size = PySet_Size(rhs);
+      if (lhs_size < rhs_size) {
+        goto end;
+      }
+
+      PyObject *lhs_key = PySequence_List(lhs);
+      PyObject *rhs_key = PySequence_List(rhs);
+      PyList_Sort(lhs_key);
+      PyList_Sort(rhs_key);
+      Py_SETREF(lhs_key, PySequence_Tuple(lhs_key));
+      Py_SETREF(rhs_key, PySequence_Tuple(rhs_key));
+      const int skip = PySet_Contains(seen_partitions, lhs_key) ||
+                       PySet_Contains(seen_partitions, rhs_key);
+      PySet_Add(seen_partitions, lhs_key);
+      PySet_Add(seen_partitions, rhs_key);
+      Py_DECREF(lhs_key);
+      Py_DECREF(rhs_key);
+      if (!skip) {
+        PyObject *new_partition = PyTuple_Pack(2, lhs, rhs);
+        PyList_Append(partitions, new_partition);
+        Py_DECREF(new_partition);
+      }
+    end:
+      Py_DECREF(lhs);
+      Py_DECREF(rhs);
+      Py_DECREF(lhs_value);
+    }
+
+    Py_DECREF(lhs_iter);
+    Py_DECREF(partition);
+  }
+  Py_DECREF(seen_partitions);
+
+  return max_pressure;
 }
 
 PyObject *AoC_y2022_d16(PyObject *unicode_input) {
   PyObject *solution = 0;
   PyObject *valves = 0;
-  PyObject *shortest_paths = 0;
-  PyObject *flows = 0;
+  PyObject *distances = 0;
   PyObject *lines = PyUnicode_Splitlines(unicode_input, 0);
   if (!lines) {
     goto done;
@@ -392,36 +385,34 @@ PyObject *AoC_y2022_d16(PyObject *unicode_input) {
   if (!valves) {
     goto done;
   }
-
-  shortest_paths = _AoC_y2022_d16_all_pairs_shortest_paths(valves);
-  if (!shortest_paths) {
+  distances = _AoC_y2022_d16_all_pairs_shortest_paths(valves);
+  if (!distances) {
     goto done;
   }
 
-  {
-    PyObject *tmp = _AoC_y2022_d16_compress_valves(valves, shortest_paths);
-    if (!tmp) {
-      goto done;
-    }
-    flows = PyTuple_GetItem(tmp, 0);
-    if (!flows) {
-      goto done;
-    }
-    Py_SETREF(shortest_paths, PyTuple_GetItem(tmp, 1));
-    if (!shortest_paths) {
-      goto done;
+  PyObject *nonzero_valve_indexes = PySet_New(0);
+  for (Py_ssize_t i = 0; i < PyList_Size(valves); ++i) {
+    PyObject *flow = PyTuple_GetItem(PyList_GetItem(valves, i), 1);
+    if (PyLong_AsLong(flow)) {
+      PySet_Add(nonzero_valve_indexes, PyLong_FromSsize_t(i));
     }
   }
 
-  PyObject *part1 = _AoC_y2022_d16_find_part1(flows, shortest_paths);
-  PyObject *part2 = _AoC_y2022_d16_find_part2(flows, shortest_paths);
+  PyObject *tmp =
+      _AoC_y2022_d16_select_subgraph(valves, distances, nonzero_valve_indexes);
+  Py_SETREF(valves, PyTuple_GetItem(tmp, 0));
+  Py_SETREF(distances, PyTuple_GetItem(tmp, 1));
+  Py_DECREF(tmp);
+  Py_DECREF(nonzero_valve_indexes);
+
+  PyObject *part1 = _AoC_y2022_d16_find_part1(valves, distances);
+  PyObject *part2 = _AoC_y2022_d16_find_part2(valves, distances);
   solution = PyUnicode_FromFormat("%S %S", part1, part2);
   Py_DECREF(part1);
   Py_DECREF(part2);
 
 done:
-  Py_XDECREF(flows);
-  Py_XDECREF(shortest_paths);
+  Py_XDECREF(distances);
   Py_XDECREF(valves);
   Py_XDECREF(lines);
   return solution;
