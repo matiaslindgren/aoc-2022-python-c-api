@@ -35,3 +35,6 @@ jobs:
 
     - name: test aoc solutions
       run: ./test
+
+    - name: dump stderr from log
+      run: cat test.stderr
