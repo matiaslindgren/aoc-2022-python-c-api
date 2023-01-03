@@ -13,7 +13,7 @@ for day in $(seq 1 25); do
 	if [ ! -f "$f_correct" ]; then
 		continue;
 	fi
-	printf 'day %.2d: ' $day | tee --append test.stderr
+	printf 'day %.2d: ' $day | tee -a test.stderr
 	expect="$(cat "$f_correct")"
 	output="$(make run_d$(printf '%.2d' $day) 2>> 'test.stderr')"
 	if [ "$output" != "$expect" ]; then
