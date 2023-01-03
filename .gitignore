@@ -4,3 +4,4 @@ python_debug
 py_src
 py_src_debug
 out
+test.stderr
