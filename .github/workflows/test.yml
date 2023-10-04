@@ -17,18 +17,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: install llvm
-      run: sudo apt install llvm
-
-    - name: cache compiled aoc-python interpreter
-      id: cache-aoc-python
-      uses: actions/cache@v3
-      with:
-        path: python
-        key: ${{ runner.os }}-aoc-python
-
-    - name: download python and compile aoc-python
-      if: steps.cache-aoc-python.outputs.cache-hit != 'true'
-      run: make python
+      run: sudo apt install llvm python3-dev
 
     - name: build aoc solutions
       run: make py_aoc

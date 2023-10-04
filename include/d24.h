@@ -133,8 +133,7 @@ PyObject *AoC_y2022_d24(PyObject *unicode_input) {
   }
 
   states = PyList_New(0);
-  for (Py_ssize_t step = 0; !_AoC_y2022_d24_map_states_has_cycle(state, states);
-       ++step) {
+  while (!_AoC_y2022_d24_map_states_has_cycle(state, states)) {
     PyList_Append(states, Py_NewRef(state));
     PyObject *state0 = state;
     PyObject *state1 = PyList_New(PyList_Size(state0));

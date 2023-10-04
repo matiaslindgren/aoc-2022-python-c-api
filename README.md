@@ -1,5 +1,3 @@
-![](./haha.png)
-
 # Advent of Code 2022 - Python C API
 
 Silly little Rube Goldberg machine.
@@ -8,28 +6,23 @@ Nothing intelligent to see here.
 ## Requirements
 
 - clang
-- make
-- curl
-- tar
+- GNU make
+- python3 development headers (3.10, 3.11, or 3.12), e.g. python3-dev on Ubuntu and Debian or python312-devel on openSUSE.
 
 ## Usage
 
-1. Download and build Python from source:
-    ```
-    make python
-    ```
-2. Compile solutions and link compiled Python:
+1. Build solutions
     ```
     make py_aoc
     ```
-3. Put inputs under `./txt/inputs/??.txt` and solve (for example day 1) using:
+2. Put inputs under `./txt/inputs/??.txt` and solve (for example day 1) using:
     ```
     make run_d01
     ```
 
 ## Explanation
 
-`py_aoc` is a program that runs the Python interpreter [entrypoint](./include/solutions_module.h#L237):
+`py_aoc` embeds the Python interpreter and runs its [entrypoint](./include/solutions_module.h#L237):
 ```
 > ./out/py_aoc
 Python 3.11.0 (main, Dec 15 2022, 19:30:38) [Clang 11.0.1 ] on linux
@@ -53,3 +46,5 @@ Steps in more detail:
 2. Pass input `str` as argument to the [solver function](./include/solutions_module.h#L37:L38).
 3. [Compute](./include/d02.h#L24-L56) numerical solutions to part 1 and 2, then [format](./include/d02.h#L58) the numbers into a single space-separated `str`.
 4. Cleanup refcounts, return the solution, and print to stdout.
+
+![](./haha.png)
