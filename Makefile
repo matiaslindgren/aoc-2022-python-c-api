@@ -8,9 +8,9 @@ CFLAGS := \
 	-Werror \
 	-fsanitize=undefined
 
-ifeq ($(shell type -p python3.12),)
-	ifeq ($(shell type -p python3.11),)
-		ifeq ($(shell type -p python3.10),)
+ifeq ($(shell command -v python3.12),)
+	ifeq ($(shell command -v python3.11),)
+		ifeq ($(shell command -v python3.10),)
 			PYTHON := python3
 		else
 			PYTHON := python3.10

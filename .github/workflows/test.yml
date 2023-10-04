@@ -16,14 +16,15 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: install llvm
+    - name: install llvm and python dev headers
       run: sudo apt install llvm python3-dev
 
     - name: build aoc solutions
-      run: make py_aoc
+      run: make ./out/py_aoc
 
     - name: test aoc solutions
       run: ./test
 
     - name: dump stderr from log
+      if: ${{ always() }}
       run: cat test.stderr
