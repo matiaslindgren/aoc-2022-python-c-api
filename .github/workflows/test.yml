@@ -19,7 +19,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: install llvm and python dev headers
-      run: sudo apt install llvm python3-dev
+      run: sudo apt install make clang llvm python3-dev
 
     - name: checkout solutions
       uses: actions/checkout@v4
