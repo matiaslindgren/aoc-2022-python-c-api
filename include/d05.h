@@ -8,19 +8,26 @@ PyObject *_AoC_y2022_d05_unicode_concat(PyObject *lhs, PyObject *rhs) {
   return lhs;
 }
 
-enum parts { part1, part2, num_parts };
-
 PyObject *AoC_y2022_d05(PyObject *unicode_input) {
   const Py_ssize_t num_stacks = 9;
-  // these need to be DECREF'd on return
-  PyObject *stacks[num_parts][num_stacks];
+
+  PyObject *stacks = PyList_New(0);
+  if (!stacks) {
+    goto done;
+  }
   PyObject *sections = NULL;
   PyObject *moves = NULL;
   PyObject *solution = NULL;
 
-  for (Py_ssize_t i = 0; i < num_stacks; ++i) {
-    for (size_t part = part1; part < num_parts; ++part) {
-      stacks[part][i] = PyList_New(0);
+  enum parts {
+    part1 = 0,
+    part2 = 1,
+    num_parts = 2,
+  };
+
+  for (Py_ssize_t i = 0; i < num_parts * num_stacks; ++i) {
+    if (PyList_Append(stacks, PyList_New(0)) < 0) {
+      goto done;
     }
   }
 
@@ -39,10 +46,15 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
         if (!crate) {
           goto done;
         }
-        for (size_t part = part1; part < num_parts; ++part) {
-          if (PyList_Append(stacks[part][stack_idx], crate) == -1) {
-            goto done;
+        for (Py_ssize_t part = part1; part < num_parts; ++part) {
+          PyObject *stack =
+              PyList_GetItem(stacks, part * num_stacks + stack_idx);
+          if (stack) {
+            if (!(PyList_Append(stack, crate) < 0)) {
+              continue;
+            }
           }
+          goto done;
         }
       }
     }
@@ -52,6 +64,7 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
   if (!moves) {
     goto done;
   }
+
   for (Py_ssize_t i = 0; i < PyList_Size(moves); ++i) {
     PyObject *move_parts = PyUnicode_Split(PyList_GetItem(moves, i), NULL, -1);
     if (!move_parts) {
@@ -73,14 +86,22 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
     if (PyErr_Occurred()) {
       goto done;
     }
-    for (size_t part = part1; part < num_parts; ++part) {
+    for (Py_ssize_t part = part1; part < num_parts; ++part) {
+      PyObject *src_stack = PyList_GetItem(stacks, part * num_stacks + src);
+      PyObject *dst_stack = PyList_GetItem(stacks, part * num_stacks + dst);
+      if (!src_stack || !dst_stack) {
+        goto done;
+      }
       for (long num_left = move_count; num_left > 0; --num_left) {
         const Py_ssize_t crate_pos = (part == part2) ? num_left - 1 : 0;
-        PyObject *crate = PyList_GetItem(stacks[part][src], crate_pos);
-        if (PyList_Insert(stacks[part][dst], 0, crate) == -1) {
+        PyObject *crate = PyList_GetItem(src_stack, crate_pos);
+        if (!crate) {
           goto done;
         }
-        if (PySequence_DelItem(stacks[part][src], crate_pos) == -1) {
+        if (PyList_Insert(dst_stack, 0, crate) < 0) {
+          goto done;
+        }
+        if (PySequence_DelItem(src_stack, crate_pos) < 0) {
           goto done;
         }
       }
@@ -88,9 +109,10 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
   }
 
   solution = PyUnicode_FromString("");
-  for (size_t part = part1; part < num_parts; ++part) {
+  for (Py_ssize_t part = 0; part < num_parts; ++part) {
     for (Py_ssize_t i = 0; i < num_stacks; ++i) {
-      PyObject *top_crate = PyList_GetItem(stacks[part][i], 0);
+      PyObject *stack = PyList_GetItem(stacks, part * num_stacks + i);
+      PyObject *top_crate = PyList_GetItem(stack, 0);
       solution = _AoC_y2022_d05_unicode_concat(solution, top_crate);
     }
     solution =
@@ -98,17 +120,14 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
   }
 
 done:
-  Py_XDECREF(sections);
-  Py_XDECREF(moves);
-  for (size_t part = part1; part < num_parts; ++part) {
-    for (size_t stack_idx = 0; stack_idx < num_stacks; ++stack_idx) {
-      PyObject *stack = stacks[part][stack_idx];
-      for (Py_ssize_t i = 0; i < PyList_Size(stack); ++i) {
-        Py_DECREF(PyList_GetItem(stack, i));
-      }
-      Py_DECREF(stack);
+  if (stacks) {
+    for (Py_ssize_t i = 0; i < PyList_Size(stacks); ++i) {
+      Py_XDECREF(PyList_GetItem(stacks, i));
     }
   }
+  Py_XDECREF(stacks);
+  Py_XDECREF(sections);
+  Py_XDECREF(moves);
   return solution;
 }
 
