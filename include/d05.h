@@ -32,7 +32,8 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
   PyObject *stacks_str = PyList_GetItem(sections, 0);
   const Py_ssize_t stack_str_len = PyUnicode_GetLength(stacks_str);
   for (size_t stack_idx = 0; stack_idx < num_stacks; ++stack_idx) {
-    for (Py_ssize_t i = 1 + 4 * stack_idx; i < stack_str_len; i += 4 * num_stacks) {
+    for (Py_ssize_t i = 1 + 4 * stack_idx; i < stack_str_len;
+         i += 4 * num_stacks) {
       if (Py_UNICODE_ISALPHA(PyUnicode_ReadChar(stacks_str, i))) {
         PyObject *crate = PyUnicode_Substring(stacks_str, i, i + 1);
         if (!crate) {
@@ -56,9 +57,12 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
     if (!move_parts) {
       goto done;
     }
-    PyObject *move_count_py = PyLong_FromUnicodeObject(PyList_GetItem(move_parts, 1), 10);
-    PyObject *src_py = PyLong_FromUnicodeObject(PyList_GetItem(move_parts, 3), 10);
-    PyObject *dst_py = PyLong_FromUnicodeObject(PyList_GetItem(move_parts, 5), 10);
+    PyObject *move_count_py =
+        PyLong_FromUnicodeObject(PyList_GetItem(move_parts, 1), 10);
+    PyObject *src_py =
+        PyLong_FromUnicodeObject(PyList_GetItem(move_parts, 3), 10);
+    PyObject *dst_py =
+        PyLong_FromUnicodeObject(PyList_GetItem(move_parts, 5), 10);
     Py_DECREF(move_parts);
     const long move_count = PyLong_AsLong(move_count_py);
     const size_t src = PyLong_AsSize_t(src_py) - 1;
@@ -89,7 +93,8 @@ PyObject *AoC_y2022_d05(PyObject *unicode_input) {
       PyObject *top_crate = PyList_GetItem(stacks[part][i], 0);
       solution = _AoC_y2022_d05_unicode_concat(solution, top_crate);
     }
-    solution = _AoC_y2022_d05_unicode_concat(solution, PyUnicode_FromString(" "));
+    solution =
+        _AoC_y2022_d05_unicode_concat(solution, PyUnicode_FromString(" "));
   }
 
 done:

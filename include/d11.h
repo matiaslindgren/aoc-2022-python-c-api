@@ -8,7 +8,8 @@ PyObject *_AoC_y2022_d10_parse_starting_items(PyObject *section) {
   PyObject *items_str = AoC_unicode_split(items_line, "Starting items: ", 1);
   PyObject *items = PyList_New(0);
   if (PyList_Size(items_str) > 1) {
-    Py_SETREF(items_str, AoC_unicode_split(PyList_GetItem(items_str, 1), ", ", -1));
+    Py_SETREF(items_str,
+              AoC_unicode_split(PyList_GetItem(items_str, 1), ", ", -1));
     for (Py_ssize_t i_item = 0; i_item < PyList_Size(items_str); ++i_item) {
       PyObject *item_str = PyList_GetItem(items_str, i_item);
       PyObject *item = PyLong_FromUnicodeObject(item_str, 10);
@@ -93,14 +94,19 @@ PyObject *_AoC_y2022_d10_parse_throwtest(PyObject *section) {
   PyObject *lines = PyUnicode_Splitlines(section, 0);
 
   PyObject *test_line = PyList_GetItem(lines, 3);
-  PyObject *divisor_str = AoC_unicode_split(test_line, "Test: divisible by ", 1);
-  PyObject *divisor = PyLong_FromUnicodeObject(PyList_GetItem(divisor_str, 1), 10);
+  PyObject *divisor_str =
+      AoC_unicode_split(test_line, "Test: divisible by ", 1);
+  PyObject *divisor =
+      PyLong_FromUnicodeObject(PyList_GetItem(divisor_str, 1), 10);
 
-  PyObject *on_true = AoC_unicode_split(PyList_GetItem(lines, 4), "throw to monkey ", 1);
+  PyObject *on_true =
+      AoC_unicode_split(PyList_GetItem(lines, 4), "throw to monkey ", 1);
   Py_SETREF(on_true, PyLong_FromUnicodeObject(PyList_GetItem(on_true, 1), 10));
 
-  PyObject *on_false = AoC_unicode_split(PyList_GetItem(lines, 5), "throw to monkey ", 1);
-  Py_SETREF(on_false, PyLong_FromUnicodeObject(PyList_GetItem(on_false, 1), 10));
+  PyObject *on_false =
+      AoC_unicode_split(PyList_GetItem(lines, 5), "throw to monkey ", 1);
+  Py_SETREF(on_false,
+            PyLong_FromUnicodeObject(PyList_GetItem(on_false, 1), 10));
 
   PyObject *throwtest = PyTuple_New(3);
   PyTuple_SET_ITEM(throwtest, 0, divisor);
@@ -112,7 +118,8 @@ PyObject *_AoC_y2022_d10_parse_throwtest(PyObject *section) {
   return throwtest;
 }
 
-Py_ssize_t _AoC_y2022_d10_compute_throwtest(PyObject *throwtest, PyObject *value) {
+Py_ssize_t _AoC_y2022_d10_compute_throwtest(PyObject *throwtest,
+                                            PyObject *value) {
   PyObject *const0 = PyLong_FromLong(0);
   PyObject *divisor = PyTuple_GET_ITEM(throwtest, 0);
   PyObject *rem = PyNumber_Remainder(value, divisor);
@@ -165,7 +172,8 @@ PyObject *_AoC_y2022_d10_run_monkey_business(PyObject *sections,
     PyDict_SetItemString(state, "inspected", inspected);
     PyList_SET_ITEM(monkey_state, i_monkey, state);
     PyObject *test_divisor = PyTuple_GET_ITEM(throwtest, 0);
-    Py_SETREF(lcm_test_divisor, PyNumber_Multiply(lcm_test_divisor, test_divisor));
+    Py_SETREF(lcm_test_divisor,
+              PyNumber_Multiply(lcm_test_divisor, test_divisor));
   }
 
   for (size_t round = 0; round < num_rounds; ++round) {
@@ -181,7 +189,8 @@ PyObject *_AoC_y2022_d10_run_monkey_business(PyObject *sections,
         Py_SETREF(item, _AoC_y2022_d10_compute_binary_operation(binop, item));
         Py_SETREF(item, PyNumber_FloorDivide(item, worry_divisor));
         Py_SETREF(item, PyNumber_Remainder(item, lcm_test_divisor));
-        Py_ssize_t target_monkey = _AoC_y2022_d10_compute_throwtest(throwtest, item);
+        Py_ssize_t target_monkey =
+            _AoC_y2022_d10_compute_throwtest(throwtest, item);
         if (target_monkey < 0) {
           goto done;
         }
@@ -236,7 +245,8 @@ PyObject *AoC_y2022_d11(PyObject *unicode_input) {
   {
     long worry_divisor = 3;
     size_t num_rounds = 20;
-    part1 = _AoC_y2022_d10_run_monkey_business(sections, worry_divisor, num_rounds);
+    part1 =
+        _AoC_y2022_d10_run_monkey_business(sections, worry_divisor, num_rounds);
     if (!part1) {
       goto done;
     }
@@ -244,7 +254,8 @@ PyObject *AoC_y2022_d11(PyObject *unicode_input) {
   {
     long worry_divisor = 1;
     size_t num_rounds = 10000;
-    part2 = _AoC_y2022_d10_run_monkey_business(sections, worry_divisor, num_rounds);
+    part2 =
+        _AoC_y2022_d10_run_monkey_business(sections, worry_divisor, num_rounds);
     if (!part2) {
       goto done;
     }

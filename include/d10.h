@@ -52,7 +52,8 @@ PyObject *AoC_y2022_d10(PyObject *unicode_input) {
     const long draw_pos = (cycle - 1) % num_cols;
     const long sprite_pos = PyLong_AsLong(reg_X);
     const int pixel_is_lit = labs(draw_pos - sprite_pos) < 2;
-    if (0 > PyList_Append(pixels, PyUnicode_FromFormat(pixel_is_lit ? "#" : " "))) {
+    if (0 >
+        PyList_Append(pixels, PyUnicode_FromFormat(pixel_is_lit ? "#" : " "))) {
       goto done;
     }
     if (draw_pos + 1 == num_cols) {

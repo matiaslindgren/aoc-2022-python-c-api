@@ -20,9 +20,16 @@ PyObject *AoC_y2022_d04(PyObject *unicode_input) {
       goto error;
     }
     long lhs_a, lhs_b, rhs_a, rhs_b;
-    sscanf(PyBytes_AsString(line), "%ld-%ld,%ld-%ld\n", &lhs_a, &lhs_b, &rhs_a, &rhs_b);
-    int full_contained = (lhs_a <= rhs_a && rhs_b <= lhs_b) || (rhs_a <= lhs_a && lhs_b <= rhs_b);
-    int part_contained = (lhs_a <= rhs_a && rhs_a <= lhs_b) || (rhs_a <= lhs_a && lhs_a <= rhs_b);
+    sscanf(PyBytes_AsString(line),
+           "%ld-%ld,%ld-%ld\n",
+           &lhs_a,
+           &lhs_b,
+           &rhs_a,
+           &rhs_b);
+    int full_contained = (lhs_a <= rhs_a && rhs_b <= lhs_b) ||
+                         (rhs_a <= lhs_a && lhs_b <= rhs_b);
+    int part_contained = (lhs_a <= rhs_a && rhs_a <= lhs_b) ||
+                         (rhs_a <= lhs_a && lhs_a <= rhs_b);
     part1 = AoC_PyLong_Add(part1, full_contained);
     part2 = AoC_PyLong_Add(part2, part_contained);
     Py_DECREF(line);

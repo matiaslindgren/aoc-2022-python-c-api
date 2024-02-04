@@ -34,6 +34,10 @@ $(OUT):
 clean:
 	rm -rv $(OUT)
 
+.PHONY: fmt
+fmt: $(wildcard include/*.h src/*.c)
+	@clang-format --verbose -i $^
+
 $(addprefix $(OUT)/,py_aoc): $(OUT)/%: src/%.c $(wildcard include/*.h) $(OUT)
 	$(CC) \
 		$(CFLAGS) \

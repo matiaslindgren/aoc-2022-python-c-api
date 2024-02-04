@@ -5,7 +5,8 @@
 #include "common.h"
 
 long _AoC_y2022_d09_parse_num_steps(PyObject *line) {
-  PyObject *num_steps_str = PyUnicode_Substring(line, 2, PyUnicode_GetLength(line));
+  PyObject *num_steps_str =
+      PyUnicode_Substring(line, 2, PyUnicode_GetLength(line));
   PyObject *num_steps_py = PyLong_FromUnicodeObject(num_steps_str, 10);
   Py_DECREF(num_steps_str);
   long num_steps = PyLong_AsLong(num_steps_py);
@@ -73,7 +74,10 @@ PyObject *AoC_y2022_d09(PyObject *unicode_input) {
           goto error;
       }
       for (size_t k = 1; k < sizeof(knots) / sizeof(knot); ++k) {
-        _AoC_y2022_d09_step(knots[k - 1].y, knots[k - 1].x, &(knots[k].y), &(knots[k].x));
+        _AoC_y2022_d09_step(knots[k - 1].y,
+                            knots[k - 1].x,
+                            &(knots[k].y),
+                            &(knots[k].x));
       }
       PySet_Add(knot1_visits, _AoC_y2022_d09_make_pair(knots[1].y, knots[1].x));
       PySet_Add(knot9_visits, _AoC_y2022_d09_make_pair(knots[9].y, knots[9].x));

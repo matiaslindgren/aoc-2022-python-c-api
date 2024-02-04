@@ -3,7 +3,8 @@
 #include "common.h"
 
 int _AoC_y2022_d03_item_priority(Py_UCS4 ch) {
-  return Py_UNICODE_ISLOWER(ch) * (ch - 'a' + 1) + Py_UNICODE_ISUPPER(ch) * (ch - 'A' + 27);
+  return Py_UNICODE_ISLOWER(ch) * (ch - 'a' + 1) +
+         Py_UNICODE_ISUPPER(ch) * (ch - 'A' + 27);
 }
 
 PyObject *AoC_y2022_d03(PyObject *unicode_input) {
@@ -22,7 +23,10 @@ PyObject *AoC_y2022_d03(PyObject *unicode_input) {
     if (n == 0 || n % 2) {
       Py_DECREF(line);
       Py_DECREF(lines);
-      PyErr_Format(PyExc_RuntimeError, "line %zd length %zd is not divisible by 2", i, n);
+      PyErr_Format(PyExc_RuntimeError,
+                   "line %zd length %zd is not divisible by 2",
+                   i,
+                   n);
       goto error;
     }
     PyObject *lhs_str = PyUnicode_Substring(line, 0, n / 2);

@@ -11,7 +11,8 @@ PyObject *_AoC_y2022_d07_path_size(PyObject *path, PyObject *children) {
   PyObject *child_path;
   PyObject *child_size;
   Py_ssize_t dict_items_pos = 0;
-  while (PyDict_Next(path_children, &dict_items_pos, &child_path, &child_size)) {
+  while (
+      PyDict_Next(path_children, &dict_items_pos, &child_path, &child_size)) {
     Py_SETREF(path_size, PyNumber_Add(path_size, child_size));
     if (PyDict_Contains(children, child_path)) {
       PyObject *subpath_size = _AoC_y2022_d07_path_size(child_path, children);
@@ -60,7 +61,8 @@ PyObject *AoC_y2022_d07(PyObject *unicode_input) {
             Py_DECREF(cmd_parts);
             goto done;
           }
-          if (PySet_Add(all_paths, _AoC_y2022_d07_format_path(dir_stack, NULL)) < 0) {
+          if (PySet_Add(all_paths,
+                        _AoC_y2022_d07_format_path(dir_stack, NULL)) < 0) {
             goto done;
           }
         }
@@ -82,7 +84,8 @@ PyObject *AoC_y2022_d07(PyObject *unicode_input) {
         size = PyLong_FromUnicodeObject(lhs, 10);
       }
       PyObject *curdir_path = _AoC_y2022_d07_format_path(dir_stack, NULL);
-      PyObject *curdir_children = PyDict_SetDefault(children, curdir_path, PyDict_New());
+      PyObject *curdir_children =
+          PyDict_SetDefault(children, curdir_path, PyDict_New());
       PyObject *child_path = _AoC_y2022_d07_format_path(dir_stack, rhs);
       if (PyDict_SetItem(curdir_children, child_path, size) < 0) {
         Py_DECREF(ls_line_parts);

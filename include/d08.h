@@ -137,7 +137,8 @@ PyObject *AoC_y2022_d08(PyObject *unicode_input) {
       if (_AoC_y2022_d08_is_visible(heightmap, grid_h, grid_w, y, x)) {
         ++part1;
       }
-      long scenic_score = _AoC_y2022_d08_scenic_score(heightmap, grid_h, grid_w, y, x);
+      long scenic_score =
+          _AoC_y2022_d08_scenic_score(heightmap, grid_h, grid_w, y, x);
       if (scenic_score > part2) {
         part2 = scenic_score;
       }
