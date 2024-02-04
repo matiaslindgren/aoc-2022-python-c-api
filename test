@@ -9,7 +9,7 @@ for day in $(seq 1 25); do
 			continue;
 		fi
 	fi
-	f_correct="$(printf './txt/correct/%.2d.txt' $day)"
+	f_correct="$(printf './txt/correct/2022/%.2d' $day)"
 	if [ ! -f "$f_correct" ]; then
 		continue;
 	fi

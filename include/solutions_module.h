@@ -102,7 +102,7 @@ static PyObject *AoC_solve_y2022(PyObject *module, PyObject *args) {
     goto error;
   }
 
-  PyObject *input_path = PyUnicode_FromFormat("./txt/input/%.2d.txt", day);
+  PyObject *input_path = PyUnicode_FromFormat("./txt/input/2022/%.2d", day);
   if (!input_path) {
     goto error;
   }

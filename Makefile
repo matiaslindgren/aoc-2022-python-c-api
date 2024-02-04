@@ -8,6 +8,8 @@ CFLAGS := \
 	-Werror \
 	-fsanitize=undefined
 
+# prefer most recent python version starting at 3.12
+# fall back to python3 if not found
 ifeq ($(shell command -v python3.12),)
 	ifeq ($(shell command -v python3.11),)
 		ifeq ($(shell command -v python3.10),)
@@ -22,6 +24,16 @@ else
 	PYTHON := python3.12
 endif
 
+.PHONY: all
+all: $(addprefix $(OUT)/,py_aoc)
+
+$(OUT):
+	mkdir -p $@
+
+.PHONY: clean
+clean:
+	rm -rv $(OUT)
+
 $(addprefix $(OUT)/,py_aoc): $(OUT)/%: src/%.c $(wildcard include/*.h) $(OUT)
 	$(CC) \
 		$(CFLAGS) \
@@ -30,13 +42,6 @@ $(addprefix $(OUT)/,py_aoc): $(OUT)/%: src/%.c $(wildcard include/*.h) $(OUT)
 		$< \
 		-o $@ \
 		$(shell $(PYTHON)-config --ldflags --embed)
-
-$(OUT):
-	mkdir -p $@
-
-.PHONY: clean
-clean:
-	rm -rv $(OUT)
 
 SOLUTIONS     := $(basename $(notdir $(wildcard include/d??.h)))
 RUN_SOLUTIONS := $(addprefix run_,$(SOLUTIONS))
