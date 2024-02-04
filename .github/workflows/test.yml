@@ -4,23 +4,34 @@ on:
   push:
     branches: main
     paths:
-      - include/*.h
-      - src/*.c
-      - Makefile
-      - txt
-      - .github/workflows/test.yml
+      - 'include/*.h'
+      - 'src/*.c'
+      - 'Makefile'
+      - 'test'
+      - '.github/workflows/test.yml'
 
 jobs:
   build_and_test:
+    timeout-minutes: 15
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: install llvm and python dev headers
       run: sudo apt install llvm python3-dev
 
+    - name: checkout solutions
+      uses: actions/checkout@v4
+
+    - name: checkout inputs and answers
+      uses: actions/checkout@v4
+      with:
+        repository: matiaslindgren/advent-of-code-data
+        token: ${{ secrets.read_aoc_data }}
+        path: txt
+
     - name: build aoc solutions
-      run: make ./out/py_aoc
+      run: make
 
     - name: test aoc solutions
       run: ./test
