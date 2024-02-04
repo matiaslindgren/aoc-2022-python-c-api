@@ -20,6 +20,12 @@ Nothing intelligent to see here.
     make run_d01
     ```
 
+## (optional) Using Docker
+
+```
+./run_in_docker.bash
+```
+
 ## Explanation
 
 `py_aoc` embeds the Python interpreter and runs its [entrypoint](./include/solutions_module.h#L237):
